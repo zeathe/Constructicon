@@ -46,7 +46,7 @@
 			<not>
 				<and>
 					<isset property="env.antbuildxml" />
-					<available file="${env.antbuildxml}" type="dir" property="ANTXML.Exists" />
+					<available file="${env.antbuildxml}" type="file" property="ANTXML.Exists" />
 				</and>
 			</not>
 		</condition>
