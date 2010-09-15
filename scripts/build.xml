@@ -105,6 +105,6 @@
 	<!-- Default Target -->
 	<target name="runbuild" depends="init">
 		<echo message="Executing Scripted Build..." />
-		<ant antfile="${env.antbuildxml}" target="${env.antbuildtarget}" output="${logging.root}/main.log.txt" useNativeBasedir="true" />
+		<ant antfile="${env.antbuildxml}" target="${env.antbuildtarget}" output="${logging.root}/main.log.txt" useNativeBasedir="true" inheritAll="true" inheritRefs="true" />
 	</target>
 </project>
