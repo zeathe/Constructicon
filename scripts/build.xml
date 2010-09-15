@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<project name="Builder" basedir="." default="runbuild">
+	<!-- 
+	Build System Setup:
+
+	We're assuming the environment variable BSLandingZone is present.
+	This represents the location on disk that we'll be pushing compile
+	output bits to... and building our package structures into.
+
+	The following variables are of interest...
+
+	**** $(BSLandingZone) 	>>>> ${output.root} (sorta)
+	**** ${basedir} 	>>>> ${proj.root}
+
+	${output.root}		=	Where Compile Output goes
+	${logging.root}		=	Where the Log Output goes
+	${proj.root}		=	Base directory of Sources
+	${src.root}		=	Where .m, .h, and .pch should be
+	${nib.root}		=	Where .xib and .nib files should exist
+					in a localized state (IE English.lproj)
+	${BuildSystem.root}	=	Location for shared BuildSystem files
+					as expected to be.
+	-->
+
+
+	<!-- Bring in the Environemnt Variables -->
+	<property environment="env" />
+
+	<!--
+	***********************************************************************
+	Specify key variables for compile output
+	***********************************************************************
+	-->
+	<fail message="Build System Landing Zone Not Set or Directory Missing">
+		<condition>
+			<not>
+				<and>
+					<isset property="env.BSLandingZone" />
+					<available file="${env.BSLandingZone}" type="dir" property="LZ.Exists" />
+				</and>
+			</not>
+		</condition>
+	</fail>
+	<fail message="ANT Build XML file not specified...">
+		<condition>
+			<not>
+				<and>
+					<isset property="env.antbuildxml" />
+					<available file="${env.antbuildxml}" type="dir" property="ANTXML.Exists" />
+				</and>
+			</not>
+		</condition>
+	</fail>
+	<fail message="ANT Build Target not specified...">
+		<condition>
+			<not>
+				<isset property="env.antbuildtarget" />
+			</not>
+		</condition>
+	</fail>
+	<!-- Assuming Environment Variable BSLandingZone -->
+	<property name="output.root" value="${env.BSLandingZone}/deliverables" />
+	<property name="logging.root" value="${env.BSLandingZone}/buildlogs" />
+	<property name="obj.root" value="${env.BSLandingZone}/objects" />
+
+	<!-- TODO: Need to do conditionals to check for BuildSystem at multiple
+	levels -->
+	<property name="BuildSystem.root" value="${proj.root}/../../../BuildSystem" />
+	
+	<!--
+	***********************************************************************
+	Start the Heavy Lifting....
+	***********************************************************************	
+	-->
+
+	<target name="init">
+		<echo message="Starting Build Init..." />
+		<tstamp />
+		<echo message="-   Creating Output Root..." />
+		<mkdir dir="${output.root}" />
+		<echo message="-   Creating Logging Root..." />
+		<mkdir dir="${logging.root}" />
+		<echo message="-   Creating Objects Root..." />
+		<mkdir dir="${obj.root}" />
+		<echo message="-   Checking Platform:" />
+		<echo message="        os.name    = ${os.name}" />
+		<echo message="        os.arch    = ${os.arch}" />
+		<echo message="        os.version = ${os.version}" />
+	</target>
+
+
+	<!--
+	<target name="clean" description="Purges all Compiled output bits and bundles" depends="init">
+		<delete 
+			dir="${output.root}/**" 
+			verbose="true"
+			includeemptydirs="true"
+			failonerror="false" />
+	</target>
+	-->
+
+	<!-- DEBUG BUILDS -->
+
+
+	<!-- Default Target -->
+	<target name="runbuild" depends="init">
+		<echo message="Executing Scripted Build..." />
+		<ant antfile="${env.antbuildxml}" target="${env.antbuildtarget}" output="${logging.root}/main.log.txt" useNativeBasedir="true" />
+	</target>
+</project>
