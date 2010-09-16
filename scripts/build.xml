@@ -86,6 +86,8 @@
 		<echo message="        os.name    = ${os.name}" />
 		<echo message="        os.arch    = ${os.arch}" />
 		<echo message="        os.version = ${os.version}" />
+
+		<echoproperties destfile="${logging.root}/propertieslist.log.txt" />
 	</target>
 
 
