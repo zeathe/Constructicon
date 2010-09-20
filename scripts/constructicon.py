@@ -33,9 +33,13 @@ class cmdLineOptions:
 
 		# internal, constructicon has sync'd himself to latest and run himself again...
 		self.cmdlineparser.add_option("--selfsynced", action="store_true", dest="selfsynced", help=optparse.SUPPRESS_HELP)
+
+		# internal, dev-helper spew info option...
 		self.cmdlineparser.add_option("--spewie", action="store_true", dest="spewie", help=optparse.SUPPRESS_HELP)
 
 		(self.cmdOpts, self.args) = self.cmdlineparser.parse_args()
+
+
 	def sanityCheck(self):
 		pass
 
@@ -111,7 +115,7 @@ class messageHandler:
 
 		logging.basicConfig(level=self.msgLevel,format=self.msgFormat)
 		
-	# Default Null Emitter
+	# Default Emitter, and other emitters
 	def emit(self, record):
 		self.msgLogger.info(record)
 
@@ -169,14 +173,20 @@ class detectOS:
 
 	def runDetection(self):
 		### OS-Detection function
-		# Intakes simply a reference to the Constructicon Config object
-		# Returns True if successful, false if failed... alters the Config object
+		# 
+		#
 		if ("posix" == str.lower(self.name) and "darwin" == str.lower(self.platform) and "darwin" == str.lower(self.system)):
 			self.detectedOS = "MacOSX"
 
 		if ("posix" == str.lower(self.name) and "linux2" == str.lower(self.platform) and "linux" == str.lower(self.system)):
 			self.detectedOS = "Linux"
 
+		# TO-DO: Need to identify the strings present on a Windows Python install
+		#if ("posix" == str.lower(self.name) and "linux2" == str.lower(self.platform) and "linux" == str.lower(self.system)):
+		#	self.detectedOS = "Windows"
+
+	def getOS(self):
+		return str.lower(self.detectedOS)
 
 	def testMe(self):
 		print "******************************************************************************"
@@ -201,12 +211,118 @@ class detectOS:
 		self.msgLogger.critical("Test - critical message")
 		print "******************************************************************************"
 
-### os-independent mount point maker
-# intake: source location of the link and destination of where to make the link
-# returns true if successful, false if not successful
-# 
-def makemountpoint(linksrc, linkdest):
-	return True
+
+class builderObject:
+	def __init__(self, verbosityLevel):
+		self.msgLogger = messageHandler("builderObject", verbosityLevel)
+
+		# Build Generics
+		self.buildtype = None
+		self.repopath = None
+		self.synclabel = None
+		self.workspace = None
+		self.publishpath = None
+
+		# Version Info
+		self.majorversion = None
+		self.minorversion = None
+		self.maintenanceversion = None
+		self.buildid = None
+
+
+	# Retrieve Values
+	def getBuildType(self):
+		return self.buildtype
+
+	def getRepoPath(self):
+		return self.repopath
+
+	def getSyncLabel(self):
+		return self.synclabel
+
+	def getWorkspace(self):
+		return self.workspace
+
+	def getPublishPath(self):
+		return self.publishpath
+
+	def getMajorVersion(self):
+		return self.majorversion
+
+	def getMinorVersion(self):
+		return self.minorversion
+
+	def getMaintVersion(self):
+		return self.maintenanceversion
+
+	def getBuildID(self):
+		return self.buildid
+
+
+	# Set Values
+	def setBuildType(self, value):
+		self.buildtype = value
+
+	def setRepoPath(self, value):
+		self.repopath = value
+
+	def setSyncLabel(self, value):
+		self.synclabel = value
+
+	def setWorkspace(self, value):
+		self.workspace = value
+
+	def setPublishPath(self, value):
+		self.publishpath = value
+
+	def setMajorVersion(self, value):
+		self.majorversion = value
+
+	def setMinorVersion(self, value):
+		self.minorversion = value
+
+	def setMaintVersion(self, value):
+		self.maintenanceversion = value
+
+	def setBuildID(self, value):
+		self.buildid = value
+
+
+	def testMe(self):
+		print "******************************************************************************"
+		print " Process: " + str(self) 
+		print " testMe() output"
+		print "------------------------------------------------------------------------------"
+		print " Build Generics..."
+		print "    BuildType                    : " + str(self.buildtype)
+		print "    RepoPath                     : " + str(self.repopath)
+		print "    SyncLabel                    : " + str(self.synclabel)
+		print "    Workspace                    : " + str(self.workspace)
+		print "    PublishPath                  : " + str(self.publishpath)
+		print " Build Versioning Info..."
+		print "    Major Version                : " + str(self.majorversion)
+		print "    Minor Version                : " + str(self.minorversion)
+		print "    Maintenance Version          : " + str(self.maintenanceversion)
+		print "    Build ID                     : " + str(self.buildid)
+		self.msgLogger.debug("Test - debug messgage")
+		self.msgLogger.info("Test - info message")
+		self.msgLogger.warning("Test - warning message")
+		self.msgLogger.error("Test - error message")
+		self.msgLogger.critical("Test - critical message")
+		print "******************************************************************************"
+
+
+
+class localBSR:
+	def __init__(self):
+		pass
+
+	### os-independent mount point maker
+	# intake: source location of the link and destination of where to make the link
+	# returns true if successful, false if not successful
+	# 
+	def makemountpoint(linksrc, linkdest):
+		return True
 
 
 def main():
@@ -226,6 +342,9 @@ def main():
 	if ( cmdOpts.getSpewie() ):
 		testedOS.testMe()
 
+	b = builderObject(cmdOpts.getVerbosity())
+	if ( cmdOpts.getSpewie() ):
+		b.testMe()
 
 	cLogger.emit("Test Emission")
 
