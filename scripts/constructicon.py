@@ -5,9 +5,6 @@ import sys
 import platform
 import optparse
 
-global cmdOpts
-global cLogger
-
 class cmdLineOptions:
 	"""A cmdLineOptions object holds all of the run-time options for Constructicon derrived from ARGV"""
 	def __init__(self):
@@ -56,8 +53,23 @@ class cmdLineOptions:
 
 		return retVal
 
+	# Returns a raw CmdLineObj -- this is more for debugging than for using
 	def getCmdLineObj(self):
 		return self.cmdOpts
+
+	# Returns a dictionary of options -- this is the general practice of usage
+	def getOptDict(self):
+		cmdLineOptDict = { 
+				"verbosity": self.cmdOpts.verbosity,
+				"quiet": self.cmdOpts.quiet,
+				"debug": self.cmdOpts.debug,
+				"buildtype": self.cmdOpts.buildtype,
+				"repopath": self.cmdOpts.repopath,
+				"synclabel": self.cmdOpts.synclabel,
+				"workspace": self.cmdOpts.workspace,
+				"publishpath": self.cmdOpts.publishpath}
+
+		return cmdLineOptDict
 
 	def testMe(self):
 		print "******************************************************************************"
@@ -81,40 +93,45 @@ class cmdLineOptions:
 
 class messageHandler:
 	def __init__(self, arg1, arg2):
-		self.sourceApp = arg1
-		self.sourceVerbosity = arg2
+		try:
+			self.sourceApp = arg1
+			self.sourceVerbosity = arg2
 
-		if (self.sourceVerbosity > 4):
-			self.verbosity = 4
-		else:
-			self.verbosity = self.sourceVerbosity
+			if (self.sourceVerbosity > 4):
+				self.verbosity = 4
+			else:
+				self.verbosity = self.sourceVerbosity
 
-		self.LevelValues = {
-				4: "debug",
-				3: "info",
-				2: "warning",
-				1: "error",
-				0: "critical",
-				-1: "quiet",
-				}
-		self.defLevel = self.LevelValues.get(self.verbosity, "quiet")
+			self.LevelValues = {
+					4: "debug",
+					3: "info",
+					2: "warning",
+					1: "error",
+					0: "critical",
+					-1: "quiet",
+					}
+			self.defLevel = self.LevelValues.get(self.verbosity, "quiet")
 
-		# Logger Configurations
-		self.msgLogger = logging.getLogger(self.sourceApp)
+			# Logger Configurations
+			self.msgLogger = logging.getLogger(self.sourceApp)
 
-		self.msgFormat = "[%(asctime)s] [%(levelname)-8s] [%(name)-20s] %(message)s"
+			self.msgFormat = "[%(asctime)s] [%(levelname)-8s] [%(name)-20s] %(message)s"
 
-		LEVELS = {	'debug'		: logging.DEBUG,
-				'info'		: logging.INFO,
-				'warning'	: logging.WARNING,
-				'error'		: logging.ERROR,
-				'critical'	: logging.CRITICAL,
-				'quiet'		: logging.NOTSET }
+			LEVELS = {	'debug'		: logging.DEBUG,
+					'info'		: logging.INFO,
+					'warning'	: logging.WARNING,
+					'error'		: logging.ERROR,
+					'critical'	: logging.CRITICAL,
+					'quiet'		: logging.NOTSET }
 
-		self.msgLevel = LEVELS.get(str.lower(self.defLevel), logging.NOTSET)
+			self.msgLevel = LEVELS.get(str.lower(self.defLevel), logging.NOTSET)
 
-		logging.basicConfig(level=self.msgLevel,format=self.msgFormat)
-		
+			logging.basicConfig(level=self.msgLevel,format=self.msgFormat)
+
+			self.msgLogger.debug("Logger Initialized")
+		except:
+			print("Failed to stand initialize Logger")
+
 	# Default Emitter, and other emitters
 	def emit(self, record):
 		self.msgLogger.info(record)
@@ -150,42 +167,58 @@ class messageHandler:
 
 class detectOS:
 	def __init__(self, verbosityLevel):
-		self.msgLogger = messageHandler("detectOS Module", verbosityLevel)
+		try:
+			self.msgLogger = messageHandler("detectOS Module", verbosityLevel)
+		except:
+			print("Failed to initialize internal logger")
 
-		# OS Token
-		self.detectedOS = None
+		try:
+			self.msgLogger.debug("initializing detectedOS variable for OS Token")
+			self.detectedOS = None
 
-		# generate a uname object
-		self.uname = os.uname()
-	
-		# pull out of the tuple (sysname, nodename, release, version, machine)
-		self.sysname = self.uname[0]
-		self.nodename = self.uname[1]
-		self.release = self.uname[2]
-		self.version = self.uname[3]
-		self.machine = self.uname[4]
+			self.msgLogger.debug("Generating a uName Object")
+			self.uname = os.uname()
 		
-		self.name = os.name
-		self.platform = sys.platform
-		self.system = platform.system()
+			self.msgLogger.debug("Pull out of the uName tuple (sysname, nodename, release, version, machine)")
+			self.sysname = self.uname[0]
+			self.nodename = self.uname[1]
+			self.release = self.uname[2]
+			self.version = self.uname[3]
+			self.machine = self.uname[4]
+			
+			self.msgLogger.debug("Pull other Python variables for OS detection...")
+			self.name = os.name
+			self.platform = sys.platform
+			self.system = platform.system()
 
-		self.runDetection()
+		except:
+			self.msgLogger.error("Failed to pull Python variables for OS detection")
+
+		try:
+			self.msgLogger.debug("Executing runDetection()")
+			self.runDetection()
+		except:
+			self.msgLogger.error("Failed to execut runDetection()")
 
 	def runDetection(self):
 		### OS-Detection function
 		# 
 		#
 		if ("posix" == str.lower(self.name) and "darwin" == str.lower(self.platform) and "darwin" == str.lower(self.system)):
+			self.msgLogger.debug("Discovered MacOSX")
 			self.detectedOS = "MacOSX"
 
 		if ("posix" == str.lower(self.name) and "linux2" == str.lower(self.platform) and "linux" == str.lower(self.system)):
+			self.msgLogger.debug("Discovered Linux")
 			self.detectedOS = "Linux"
 
 		# TO-DO: Need to identify the strings present on a Windows Python install
 		#if ("posix" == str.lower(self.name) and "linux2" == str.lower(self.platform) and "linux" == str.lower(self.system)):
+		#	self.msgLogger.debug("Discovered Windows")
 		#	self.detectedOS = "Windows"
 
 	def getOS(self):
+		self.msgLogger.debug("returning detectedOS via getOS()")
 		return str.lower(self.detectedOS)
 
 	def testMe(self):
@@ -214,20 +247,28 @@ class detectOS:
 
 class builderObject:
 	def __init__(self, verbosityLevel):
-		self.msgLogger = messageHandler("builderObject", verbosityLevel)
+		try:
+			self.msgLogger = messageHandler("builderObject", verbosityLevel)
+		except:
+			print("Failed to initialize internal logger")
 
-		# Build Generics
-		self.buildtype = None
-		self.repopath = None
-		self.synclabel = None
-		self.workspace = None
-		self.publishpath = None
+		try:
+			self.msgLogger.debug("Initializing Build Generics variables...")
+			# Build Generics
+			self.buildtype = None
+			self.repopath = None
+			self.synclabel = None
+			self.workspace = None
+			self.publishpath = None
 
-		# Version Info
-		self.majorversion = None
-		self.minorversion = None
-		self.maintenanceversion = None
-		self.buildid = None
+			self.msgLogger.debug("Initializing Version Info variables...")
+			# Version Info
+			self.majorversion = None
+			self.minorversion = None
+			self.maintenanceversion = None
+			self.buildid = None
+		except:
+			self.msgLogger.error("Cannot initialize base object variables")
 
 
 	# Retrieve Values
@@ -261,30 +302,39 @@ class builderObject:
 
 	# Set Values
 	def setBuildType(self, value):
+		self.msgLogger.debug("Setting buildtype via setBuildType() as " + str(value))
 		self.buildtype = value
 
 	def setRepoPath(self, value):
+		self.msgLogger.debug("Setting repopath via setRepoPath() as " + str(value))
 		self.repopath = value
 
 	def setSyncLabel(self, value):
+		self.msgLogger.debug("Setting synclabel via setSyncLabel() as " + str(value))
 		self.synclabel = value
 
 	def setWorkspace(self, value):
+		self.msgLogger.debug("Setting workspace via setWorkspace() as " + str(value))
 		self.workspace = value
 
 	def setPublishPath(self, value):
+		self.msgLogger.debug("Setting publishpath via setPublishPath() as " + str(value))
 		self.publishpath = value
 
 	def setMajorVersion(self, value):
+		self.msgLogger.debug("Setting majorversion via setMajorVersion() as " + str(value))
 		self.majorversion = value
 
 	def setMinorVersion(self, value):
+		self.msgLogger.debug("Setting minorversion via setMinorVersion() as " + str(value))
 		self.minorversion = value
 
 	def setMaintVersion(self, value):
+		self.msgLogger.debug("Setting maintenanceversion via setMaintVersion() as " + str(value))
 		self.maintenanceversion = value
 
 	def setBuildID(self, value):
+		self.msgLogger.debug("Setting buildid via setBuildID() as " + str(value))
 		self.buildid = value
 
 
@@ -314,9 +364,45 @@ class builderObject:
 
 
 class localBSR:
-	def __init__(self):
-		pass
+	def __init__(self, verbosityLevel, buildObject):
+		try:
+			self.msgLogger = messageHandler("localBSR", verbosityLevel)
+		except:
+			print("Failed to initialize internal logger")
+		try:	
+			self.workspace = buildObject.getWorkspace()
+		except:
+			self.msgLogger.error("Unable to retreive workspace from buildObject.getWorkspace()")
 
+		if (None == self.workspace):
+			self.msgLogger.debug("Starting to look for temporary directory environment variables")
+
+			try:
+				if (os.environ['TEMP']):
+					self.msgLogger.debug("found TEMP os.environ variable")
+					self.msgLogger.debug("Setting local object workspace")
+					self.workspace = str(os.environ["TEMP"])
+					self.msgLogger.debug("exporting object workspace to buildObject")
+					buildObject.setWorkspace( os.environ["TEMP"] )
+			except:
+				pass
+
+			try:	
+				if (os.environ['TMPDIR']):
+					self.msgLogger.debug("found TMPDIR os.environ variable")
+					self.msgLogger.debug("Setting local object workspace")
+					self.workspace = os.environ['TMPDIR']
+					self.msgLogger.debug("exporting object workspace to buildObject")
+					buildObject.setWorkspace( os.environ['TMPDIR'] )
+			except:
+				pass
+			if (None == self.workspace):
+				self.msgLogger.error("We didn't find a working directory... We cannot proceed")
+
+
+
+
+		
 	### os-independent mount point maker
 	# intake: source location of the link and destination of where to make the link
 	# returns true if successful, false if not successful
@@ -324,39 +410,80 @@ class localBSR:
 	def makemountpoint(linksrc, linkdest):
 		return True
 
+	def testMe(self):
+		print "******************************************************************************"
+		print " Process: " + str(self) 
+		print " testMe() output"
+		print "------------------------------------------------------------------------------"
+		print "    Workspace		: " + str(self.workspace)
+		print "    os.environ[temp]     : " + str(os.environ['TMPDIR'])
+		print "******************************************************************************"
+
 
 def main():
-	global cmdOpts
-	global cLogger
+	try:
+		cmdOpts = cmdLineOptions()
+		if ( cmdOpts.getSpewie() ):
+			cmdOpts.testMe()
 
-	cmdOpts = cmdLineOptions()
-	if ( cmdOpts.getSpewie() ):
-		cmdOpts.testMe()
+		myDict = cmdOpts.getOptDict()
+	except: 
+		print("Failed to bootstrap the CommandLine parsing process")
 
 	#                         Caller Instance      , CmdLine Obj
 	cLogger = messageHandler("Constructicon Master", cmdOpts.getVerbosity())
 	if ( cmdOpts.getSpewie() ):
 		cLogger.testMe()
 
+	cLogger.debug("Message Handler Initialized")
+	cLogger.debug("cmdLineOptions() previously established before Message Handler Initialized...")
+	cLogger.debug("""myDict.get("verbosity") is : """ + str(myDict.get("verbosity")))
+	cLogger.debug("""myDict.get("quiet") is : """ + str(myDict.get("quiet")))
+	cLogger.debug("""myDict.get("debug") is : """ + str(myDict.get("debug")))
+	cLogger.debug("""myDict.get("buildtype") is : """ + str(myDict.get("buildtype")))
+	cLogger.debug("""myDict.get("repopath") is : """ + str(myDict.get("repopath")))
+	cLogger.debug("""myDict.get("synclabel") is : """ + str(myDict.get("synclabel")))
+	cLogger.debug("""myDict.get("workspace") is : """ + str(myDict.get("workspace")))
+	cLogger.debug("""myDict.get("publishpath") is : """ + str(myDict.get("publishpath")))
+
+
+
+	cLogger.debug("START -- detectOS()")
 	testedOS = detectOS(cmdOpts.getVerbosity())
 	if ( cmdOpts.getSpewie() ):
 		testedOS.testMe()
+	cLogger.debug("END -- detectOS()")
+
+
+	cLogger.debug("START -- Instantiating builderObject b")
 
 	b = builderObject(cmdOpts.getVerbosity())
 	if ( cmdOpts.getSpewie() ):
 		b.testMe()
 
-	cLogger.emit("Test Emission")
+	cLogger.debug("END -- builderObject b Instantiation")
+
+
+	cLogger.debug("START -- building up BSR...")
+	BSR = localBSR(myDict.get("verbosity"), b)
+	if ( cmdOpts.getSpewie() ):
+		BSR.testMe()
+
 
 	###
 	### Set up Workspace (either defined workspace or standard mountpoint)
 	###
+
 
 	# Make mount point
 
 	# Prep directory structure
 
 
+	cLogger.debug("END -- BSR built up...")
+
+
+	cLogger.debug("START -- Syncing Build System...")
 	###
 	### Pull in BuildSystem
 	###
@@ -369,6 +496,9 @@ def main():
 
 	# Re-Execute Constructicon (call --selfsynced)
 
+	cLogger.debug("END -- Syncing Build System...")
+
+	cLogger.debug("START -- Dumping key variables")
 
 	###
 	### Dump Debug Info
@@ -377,7 +507,10 @@ def main():
 	# Dump Debug Info
 
 
+	cLogger.debug("END -- Dumping key variables")
 
+
+	cLogger.debug("START -- Pulling in Project sources...")
 	###
 	### Pull in Source
 	###
@@ -385,6 +518,9 @@ def main():
 	# Sync in RepoPath with SyncLabel
 
 
+	cLogger.debug("END -- Pulling in Project sources")
+
+	cLogger.debug("START -- Building Project")
 	###
 	### Build
 	###
@@ -395,7 +531,9 @@ def main():
 
 
 
+	cLogger.debug("END -- Building Project")
 
+	cLogger.debug("START -- Publishing Deliverables...")
 	###
 	### Publish
 	###
@@ -404,9 +542,7 @@ def main():
 
 
 
-
-	foo = None
-	detectOS(foo)
+	cLogger.debug("END -- Publishing Deliverables...")
 
 
 if __name__ == "__main__":
