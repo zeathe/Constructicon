@@ -539,7 +539,7 @@ class localBSR:
 		# self.buildSystemPath = self.workspace + os.sep + self.pathUUID + os.sep + "BuildSystem"
 		self.buildSystemPath = os.path.abspath( self.__pathname + ".." + os.sep )
 		self.projectPath = self.workspace + os.sep + self.pathUUID + os.sep + "Project"
-		self.outputPath = self.workspace + os.sep + self.pathUUID + os.sep + "OR"
+		self.outputPath = self.workspace + os.sep + self.pathUUID + os.sep + "OR" + os.sep + "v" + str(buildObject.getMajorVersion()) + "." + str(buildObject.getMinorVersion()) + "." + str(buildObject.getMaintVersion()) + "." + str(buildObject.getBuildID())
 
 	def getWorkspace(self):
 		return self.workspace
@@ -753,79 +753,20 @@ def main():
 
 		cLogger.debug("END -- builderObject b Instantiation")
 
+		cLogger.debug("START -- Verifying Sources, Versions, and Labels...")
 
 		# ----------------------------------------------------------------------
-		# Set up Build System Root (BSR)
-		# ----------------------------------------------------------------------
-
-		cLogger.debug("START -- building up BSR...")
-		try:
-			BSR = localBSR(cmdOptsDict.get("verbosity"), b)
-		except:
-			cLogger.critical("Failed to create BSR LocalBSR object...")
-			exit(1)
-
-		if ( cmdOpts.getSpewie() ):
-			BSR.testMe()
-
-
-		if ( cmdOpts.getSpewie() ):
-			b.testMe()
-
-		### Verify Repo
-
-		# IF BuildType is NOT dev.... Verify RepoPath is a valid GIT object
-
-		# IF BuildType IS dev.... Identify if the RepoPath is a GIT object or file share
-
-		# IF BuildType IS dev.... and RepoPath is a GIT Object.... verify GIT object
-
-		# IF BuildType IS dev.... and RepoPath is file share.... verify file share
-
-		### Set up Workspace (either defined workspace or standard mountpoint)
-
-		# Variables that we already have in localBSR Object
-		# localBSRObj.getWorkspace		=	Workspace Root Location
-		# localBRSObj.getBuildSystemPath	=	Build System Path 
-		#						(where Constructicon would be sync'd and second-Run)
-		# localBSRObj.getProjectPath		=	Source Code Sync Point (for local and offical builds)
-		# localBSRObj.getOutputPath		-	Objects/BuildLogs/Deliverables "BSLandingZone"
-
-		# Make mount points
-		#cLogger.debug("Creating BSR Build System Path : " + str(BSR.getBuildSystemPath()))
-		#os.makedirs(BSR.getBuildSystemPath())
-		cLogger.debug("Creating BSR Output Path       : " + str(BSR.getOutputPath()))
-		os.makedirs(BSR.getOutputPath())
-
-		# Prep directory structure
-
-		# IF BuildType IS dev.... and RepoPath is file share.... link into ProjectPath
-		if ( None != b.getFilePath() ):
-			cLogger.debug("Linking FilePath " + str(b.getFilePath()) + " to ProjectPath " + str(BSR.getProjectPath()))
-			try:
-				os.link(b.getFilePath(), BSR.getProjectPath())
-			except:
-				cLogger.critical("Failed to Link FilePath " + str(b.getFilePath()) + " to ProjectPath " + str(BSR.getProjectPath()))
-				exit(1)
-		else:
-			if ( None != b.getRepoPath() ):
-				cLogger.debug("Creating BSR Project Path      : " + str(BSR.getProjectPath()))
-				os.makedirs(BSR.getProjectPath())
-			else:
-				cLogger.critical("Major Problem.... No FilePath or RepoPath. We fell into a trap we should never hit...")
-				exit(1)
-
-
-		cLogger.debug("END -- BSR built up...")
-
-		cLogger.debug("START -- Pulling in Project sources...")
-
-		# ----------------------------------------------------------------------
-		# Sync source, version, report back for official builds
+		# Verify source, version, report back for official builds
 		# ----------------------------------------------------------------------
 
 		### Get Version
 		if ( None == b.getFilePath() and None != b.getRepoPath() ):
+			### Verify Repo
+
+			# IF BuildType is NOT dev.... Verify RepoPath is a valid GIT object
+
+			# IF BuildType IS dev.... and RepoPath is a GIT Object.... verify GIT object
+
 			if ( "official" == str.tolower( b.getBuildType() ) ):
 
 				# If SyncLabel is NOT specified....
@@ -901,8 +842,6 @@ def main():
 
 			# If SyncLabel IS Specified.... Use SyncLabel if verified exists
 			
-			### Pull in Source
-
 			# If BuildType is Local or Official.... Sync BSR to Branch/Version Label
 		else:
 			# If BuildType is Dev and FILEPATH.... Skip SyncState (this allows building with rogue code)
@@ -913,7 +852,77 @@ def main():
 			b.setMaintVersion(0)
 			b.setBuildID(0)
 
+
+		cLogger.debug("END -- Verifying Sources, Versions, and Labels...")
+
+		# ----------------------------------------------------------------------
+		# Set up Build System Root (BSR)
+		# ----------------------------------------------------------------------
+
+		cLogger.debug("START -- building up BSR...")
+		try:
+			BSR = localBSR(cmdOptsDict.get("verbosity"), b)
+		except:
+			cLogger.critical("Failed to create BSR LocalBSR object...")
+			exit(1)
+
+		if ( cmdOpts.getSpewie() ):
+			BSR.testMe()
+
+
+		if ( cmdOpts.getSpewie() ):
+			b.testMe()
+
+		### Set up Workspace (either defined workspace or standard mountpoint)
+
+		# Variables that we already have in localBSR Object
+		# localBSRObj.getWorkspace		=	Workspace Root Location
+		# localBRSObj.getBuildSystemPath	=	Build System Path 
+		#						(where Constructicon would be sync'd and second-Run)
+		# localBSRObj.getProjectPath		=	Source Code Sync Point (for local and offical builds)
+		# localBSRObj.getOutputPath		-	Objects/BuildLogs/Deliverables "BSLandingZone"
+
+		# Make mount points
+		#cLogger.debug("Creating BSR Build System Path : " + str(BSR.getBuildSystemPath()))
+		#os.makedirs(BSR.getBuildSystemPath())
+		cLogger.debug("Creating BSR Output Path       : " + str(BSR.getOutputPath()))
+		os.makedirs(BSR.getOutputPath())
+
+		# Prep directory structure
+
+		# IF BuildType IS dev.... and RepoPath is file share.... link into ProjectPath
+		if ( None != b.getFilePath() ):
+			cLogger.debug("Linking FilePath " + str(b.getFilePath()) + " to ProjectPath " + str(BSR.getProjectPath()))
+			try:
+				os.link(b.getFilePath(), BSR.getProjectPath())
+			except:
+				cLogger.critical("Failed to Link FilePath " + str(b.getFilePath()) + " to ProjectPath " + str(BSR.getProjectPath()))
+				exit(1)
+		else:
+			if ( None != b.getRepoPath() ):
+				cLogger.debug("Creating BSR Project Path      : " + str(BSR.getProjectPath()))
+				os.makedirs(BSR.getProjectPath())
+			else:
+				cLogger.critical("Major Problem.... No FilePath or RepoPath. We fell into a trap we should never hit...")
+				exit(1)
+
+
+		cLogger.debug("END -- BSR built up...")
+
+		cLogger.debug("START -- Pulling in Project sources")
+
+		# ----------------------------------------------------------------------
+		# Sync the Code
+		# ----------------------------------------------------------------------
+
+		if ( None != b.getRepoPath() and True != b.getBuildFailed() ):
+			### Pull in Source
+			pass
+
+
 		cLogger.debug("END -- Pulling in Project sources")
+
+
 
 		cLogger.debug("START -- Dumping key variables")
 
@@ -1004,7 +1013,8 @@ def main():
 		# $ ../ant/bin/ant -Denv.BSLandingZone=/path/to/OUTDIR/<version> -Denv.antbuildxml=/path/to/project/root/<version> -Denv.antbuildtarget=default
 		# $ popd
 		try:
-			BuildRetVal = os.system(BSR.getBuildSystemPath() + os.sep + "ant" + os.sep + "bin" + os.sep + "ant" + " " + "-f" + " " + BSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "build.xml")
+			cLogger.debug("Calling Ant...")
+			BuildRetVal = os.system(BSR.getBuildSystemPath() + os.sep + "ant" + os.sep + "bin" + os.sep + "ant" + " -logger org.apache.tools.ant.listener.BigProjectLogger " + " -logfile " + BSR.getOutputPath() + os.sep + "constructicon.ant.log.txt " + "-f" + " " + BSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "build.xml")
 		except:
 			cLogger.error("Failed to launch ANT build")
 			b.setBuildFailed()
@@ -1065,10 +1075,12 @@ def main():
 
 		if not ( b.getBuildFailed() ):
 			cLogger.debug("Build Completed Successfully...")
+			print "BUILD SUCCEEDED"
 			exit(0)
 		else:
 			cLogger.error("Build Reported Failure...")
 			cLogger.critical("BUILD FAILED")
+			print "BUILD FAILED"
 			exit(1)
 
 
