@@ -11,6 +11,10 @@
 
 	**** $(BSLandingZone) 	>>>> ${output.root} (sorta)
 	**** ${basedir} 	>>>> ${proj.root}
+	**** ${Constructicon.MajorVer}
+	**** ${Constructicon.MinorVer}
+	**** ${Constructicon.MaintVer}
+	**** ${Constructicon.BuildID}
 
 	${output.root}		=	Where Compile Output goes
 	${logging.root}		=	Where the Log Output goes
