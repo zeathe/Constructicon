@@ -1,0 +1,90 @@
+# ----------------------------------------------------------------------------
+#
+#   Constructicon.PY
+#   (C) Zeathe 2010-2011 - zeathe@qua-axiom.com
+#   ... as defined under the ASF License 
+#
+#   Overview:
+#
+#      Constructicon is a build wrapper/driver script to support builds
+#      adhering to Constructicon standards.  The build system is designed
+#      to provide for local dev builds from file or GIT Repo, localized
+#      consumer builds of source (direct pull of released version tags),
+#      and completely controlled official builds with publishing and
+#      back-tagging into a master GIT Repo.
+#
+#      Constructicon does the heavy lifting around a series of ANT scripts
+#      for a fully functional build infrastructure to support just about
+#      any level of controlled building needs.
+#
+#      Constructicon has been designed to modularly reside within any
+#      number of build management tools (Hudson, CruiseControl, ccNET,
+#      custom scripts, or other build manager) and provide some
+#      flexibility.
+#
+#   Structure:
+#
+#      ---- Constructicon ----                    ---- External Project ----
+#
+#      Build Tool                                 "Project Foo"
+#       |                                          |
+#       |-- Constructicon.py           |------>>   |-- Constructicon Project
+#            |                         |               ANT build.xml
+#            |-- Constructicon         |                |
+#                Master ANT    >>------|                |-- Project Foo ANT
+#                build.xml                                  XMLs
+#                                                            |
+#                                                            |-- Custom Tasks
+#
+#
+#   License:
+#
+#      SCOPE OF LICENSE
+#      Constructicon.py, the build.xml packaged with Constructicon.py, the
+#      file system structure of Constructicon's BuildSystems directory, and
+#      the root build.xml file to be present in external projects (provided
+#      by Constructicon) all fall within the scope of the Constructicon
+#      license.
+#
+#      Full list of files:
+#         ./BuildSystems/scripts/constructicon.py
+#         ./BuildSystems/scripts/build.xml
+#
+#         ./BuildSystems/python/python.mac.sh
+#         ./BuildSystems/python/python.linux.sh
+#         ./BuildSystems/python/python.win32.cmd
+#
+#         ./Projects/HelloWorld/v0.1/build.xml
+#
+#         ./Projects/HelloWorld/v0.1/... (all other recursive files)
+#
+#      3rd Party tools (Python, Python Libraries, MinGW, etc) are all
+#      *NOT* owned/controlled by me and are subject to their own respective
+#      licenses.  I apologize to these owners now for any violation of
+#      their re-distribution clauses -- and will aim to correct this in
+#      ways that doesn't compromise the stand-alone modularity attempted
+#      to be achieved by Constructicon.
+#
+#      This license excludes all third-party external project code that
+#      would exist past the constructicon project ANT build.xml file.  This
+#      license releases all claims of interest to to external project code
+#      in which a user would use constructicon to build, as defined as
+#      being further down-stream from the constructicon project ANT build.xml
+#      file.
+#
+# Copyright 2011 Zeathe <zeathe@qua-axiom.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ----------------------------------------------------------------------------
+
