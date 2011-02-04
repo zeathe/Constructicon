@@ -7,6 +7,8 @@ export PYTHONBIN=`pwd`/bin/python
 export PYTHONPATH=`pwd`/lib
 popd
 
+export PYTHONPAT=${PYTHONPATH}:`pwd`/lib
+
 popd
 
 ${PYTHONBIN} $*
