@@ -632,7 +632,7 @@ class localBSR:
 
 		self.pathUUID = str(uuid.uuid4())
 
-		self.buildSystemPath = os.path.abspath( self.__pathname + ".." + os.sep )
+		self.buildSystemPath = os.path.abspath( self.__pathname + os.sep + ".." + os.sep )
 		self.projectPath = self.workspace + os.sep + self.pathUUID + os.sep + "Project"
 		self.outputPath = self.workspace + os.sep + self.pathUUID + os.sep + "OR" + os.sep + "v" + str(buildObject.getMajorVersion()) + "." + str(buildObject.getMinorVersion()) + "." + str(buildObject.getMaintVersion()) + "." + str(buildObject.getBuildID())
 
@@ -947,9 +947,10 @@ def main():
 
 		#cLogger.critical("CommandLine Would Be: blah blah constructicon.py " + recycleCMDLine + " --skipselfsync")
 		# selfsyncBSR.getBuildSystemPath()
-		print selfsyncBSR.getBuildSystemPath() + os.sep + "python" + os.sep + "python.mac.sh" + " " + selfsyncBSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "constructicon.py " + str(sys.argv) + " --skipselfsync"
-		#exit(RetVal)
-		exit(69)
+		# cLogger.debug("Calling CommandLine: " str(selfsyncBSR.getBuildSystemPath()) + os.sep + "python" + os.sep + "python.mac.sh" + " " + str(selfsyncBSR.getBuildSystemPath()) + os.sep + "scripts" + os.sep + "constructicon.py " + str(sys.argv) + " --skipselfsync")
+		RetVal = os.system(selfsyncBSR.getBuildSystemPath() + os.sep + "python" + os.sep + "python.mac.sh" + " " + selfsyncBSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "constructicon.py " + recycleCMDLine + " --skipselfsync")
+		exit(RetVal)
+		#exit(69)
 
 
 		# Re-Execute Constructicon (call --skipselfsync)
