@@ -628,11 +628,15 @@ class localBSR:
 				raise
 
 		# Get some pathing information
-		self.__pathname, self.__scriptname = os.path.split(sys.argv[0])
+		self.__pathname, self.__scriptname = os.path.split(os.path.abspath(sys.argv[0]))
+		self.msgLogger.debug("self.__pathname: " + self.__pathname)
+		self.msgLogger.debug("self.__scriptname: " + self.__scriptname)
+		self.msgLogger.debug("os.path.basename(sys.argv[0]): " + os.path.basename(sys.argv[0]))
+		self.msgLogger.debug("os.path.abspath(self.__pathname): " + os.path.abspath(self.__pathname + os.sep + ".." + os.sep))
 
 		self.pathUUID = str(uuid.uuid4())
 
-		self.buildSystemPath = os.path.abspath( self.__pathname + os.sep + ".." + os.sep )
+		self.buildSystemPath = os.path.abspath(self.__pathname + os.sep + "..") + os.sep
 		self.projectPath = self.workspace + os.sep + self.pathUUID + os.sep + "Project"
 		self.outputPath = self.workspace + os.sep + self.pathUUID + os.sep + "OR" + os.sep + "v" + str(buildObject.getMajorVersion()) + "." + str(buildObject.getMinorVersion()) + "." + str(buildObject.getMaintVersion()) + "." + str(buildObject.getBuildID())
 
@@ -655,7 +659,7 @@ class localBSR:
 		pass
 
 	def resetBuildSystemPath(self):
-		self.buildSystemPath = self.workspace + os.sep + self.pathUUID + os.sep + "BuildSystem"
+		self.buildSystemPath = self.workspace + os.sep + self.pathUUID + os.sep + "BuildSystem" 
 
 	def resetOutputPath(self):
 		self.outputPath = self.workspace + os.sep + self.pathUUID + os.sep + "OR" + os.sep + "v" + str(buildObject.getMajorVersion()) + "." + str(buildObject.getMinorVersion()) + "." + str(buildObject.getMaintVersion()) + "." + str(buildObject.getBuildID())
@@ -860,6 +864,8 @@ def main():
 
 	if not ( cmdOpts.getSkipSelfSync() ):
 
+		print "INITIATING SELF-SYNC..."
+
 		cLogger.debug("START -- Syncing Build System...")
 
 		###
@@ -948,6 +954,7 @@ def main():
 		#cLogger.critical("CommandLine Would Be: blah blah constructicon.py " + recycleCMDLine + " --skipselfsync")
 		# selfsyncBSR.getBuildSystemPath()
 		# cLogger.debug("Calling CommandLine: " str(selfsyncBSR.getBuildSystemPath()) + os.sep + "python" + os.sep + "python.mac.sh" + " " + str(selfsyncBSR.getBuildSystemPath()) + os.sep + "scripts" + os.sep + "constructicon.py " + str(sys.argv) + " --skipselfsync")
+		print "SELF SYNC SUCCESSFUL.  RELAUNCHING..."
 		RetVal = os.system(selfsyncBSR.getBuildSystemPath() + os.sep + "python" + os.sep + "python.mac.sh" + " " + selfsyncBSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "constructicon.py " + recycleCMDLine + " --skipselfsync")
 		exit(RetVal)
 		#exit(69)
@@ -1441,7 +1448,8 @@ def main():
 			# $ popd
 			try:
 				cLogger.debug("Calling Ant...")
-				BuildRetVal = os.system(BSR.getBuildSystemPath() + os.sep + "ant" + os.sep + "bin" + os.sep + "ant" + " -logger org.apache.tools.ant.listener.BigProjectLogger " + " -logfile " + BSR.getOutputPath() + os.sep + "constructicon.ant.log.txt " + "-f" + " " + BSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "build.xml")
+				print "Calling: " + str(BSR.getBuildSystemPath()) + "ant" + os.sep + "bin" + os.sep + "ant" + " -logger org.apache.tools.ant.listener.BigProjectLogger " + " -logfile " + BSR.getOutputPath() + os.sep + "constructicon.ant.log.txt " + "-f" + " " + BSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "build.xml"
+				BuildRetVal = os.system(BSR.getBuildSystemPath() + "ant" + os.sep + "bin" + os.sep + "ant" + " -logger org.apache.tools.ant.listener.BigProjectLogger " + " -logfile " + BSR.getOutputPath() + os.sep + "constructicon.ant.log.txt " + "-f" + " " + BSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "build.xml")
 			except:
 				cLogger.error("Failed to launch ANT build")
 				b.setBuildFailed()
