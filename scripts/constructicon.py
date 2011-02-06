@@ -316,6 +316,7 @@ class messageHandler:
 			self.msgLogger.debug("Logger Initialized")
 		except:
 			print("Failed to stand initialize Logger")
+			raise
 
 	# Default Emitter, and other emitters
 	def emit(self, record):
@@ -356,6 +357,7 @@ class detectOS:
 			self.msgLogger = messageHandler("detectOS Module", verbosityLevel)
 		except:
 			print("Failed to initialize internal logger")
+			raise
 
 		try:
 			self.msgLogger.debug("initializing detectedOS variable for OS Token")
@@ -378,12 +380,14 @@ class detectOS:
 
 		except:
 			self.msgLogger.error("Failed to pull Python variables for OS detection")
+			raise
 
 		try:
 			self.msgLogger.debug("Executing runDetection()")
 			self.runDetection()
 		except:
 			self.msgLogger.error("Failed to execut runDetection()")
+			raise
 
 	def runDetection(self):
 		### OS-Detection function
@@ -436,6 +440,7 @@ class builderObject:
 			self.msgLogger = messageHandler("builderObject", verbosityLevel)
 		except:
 			print("Failed to initialize internal logger")
+			raise
 
 		try:
 			self.msgLogger.debug("Initializing Build Generics variables...")
@@ -460,6 +465,7 @@ class builderObject:
 			self.buildfailure = False
 		except:
 			self.msgLogger.error("Cannot initialize base object variables")
+			raise
 
 
 	# Retrieve Values
@@ -584,12 +590,14 @@ class localBSR:
 			self.msgLogger = messageHandler("localBSR", verbosityLevel)
 		except:
 			print("Failed to initialize internal logger")
+			raise
 
 
 		try:	
 			self.workspace = buildObject.getWorkspace()
 		except:
 			self.msgLogger.error("Unable to retreive workspace from buildObject.getWorkspace()")
+			raise
 
 		# if this isn't specified, and the BuildObject doesn't contain the workspace value,
 		# the BSR will have to assume the TMP directory
@@ -624,13 +632,15 @@ class localBSR:
 
 		self.pathUUID = str(uuid.uuid4())
 
-		# self.buildSystemPath = self.workspace + os.sep + self.pathUUID + os.sep + "BuildSystem"
 		self.buildSystemPath = os.path.abspath( self.__pathname + ".." + os.sep )
 		self.projectPath = self.workspace + os.sep + self.pathUUID + os.sep + "Project"
 		self.outputPath = self.workspace + os.sep + self.pathUUID + os.sep + "OR" + os.sep + "v" + str(buildObject.getMajorVersion()) + "." + str(buildObject.getMinorVersion()) + "." + str(buildObject.getMaintVersion()) + "." + str(buildObject.getBuildID())
 
 	def getWorkspace(self):
 		return self.workspace
+
+	def getPathUUID(self):
+		return self.pathUUID
 
 	def getBuildSystemPath(self):
 		return self.buildSystemPath
@@ -643,6 +653,12 @@ class localBSR:
 
 	def getLinkSrc(self):
 		pass
+
+	def resetBuildSystemPath(self):
+		self.buildSystemPath = self.workspace + os.sep + self.pathUUID + os.sep + "BuildSystem"
+
+	def resetOutputPath(self):
+		self.outputPath = self.workspace + os.sep + self.pathUUID + os.sep + "OR" + os.sep + "v" + str(buildObject.getMajorVersion()) + "." + str(buildObject.getMinorVersion()) + "." + str(buildObject.getMaintVersion()) + "." + str(buildObject.getBuildID())
 
 	### os-independent mount point maker
 	# intake: source location of the link and destination of where to make the link
@@ -674,6 +690,104 @@ class localBSR:
 		print "    projectPath         : " + str(self.projectPath)
 		print "    outputPath          : " + str(self.outputPath)
 		print "******************************************************************************"
+
+class gitObject:
+	def __init__(self, verbosityLevel):
+		try:
+			self.msgLogger = messageHandler("gitObject", verbosityLevel)
+		except:
+			print("Failed to initialize internal logger")
+
+		self.remoteRepoPath = None
+		self.localRepoPath = None
+		self.repoBranch = None
+		self.repoSyncLabel = None 
+		self.__localRepoHandle = None
+		self.__remoteRepoHandle = None
+
+	def getRemoteRepoPath(self):
+		return self.remoteRepoPath
+
+	def getLocalRepoPath(self):
+		return self.localRepoPath
+
+	def getRepoBranch(self):
+		return self.repoBranch
+
+	def getRepoSyncLabel(self):
+		return self.repoSyncLabel
+
+	def setRemoteRepoPath(self, value):
+		self.msgLogger.debug("Setting RemoteRepoPath via setRemoteRepoPath() as " + str(value))
+		self.remoteRepoPath = value
+
+	def setLocalRepoPath(self, value):
+		self.msgLogger.debug("Setting RemoteRepoPath via setLocalRepoPath() as " + str(value))
+		self.localRepoPath = value
+
+	def setRepoBranch(self, value):
+		self.msgLogger.debug("Setting RemoteRepoPath via setRepoBranch() as " + str(value))
+		self.repoBranch = value
+
+	def setRepoSyncLabel(self, value):
+		self.msgLogger.debug("Setting RemoteRepoPath via setRepoSyncLabel() as " + str(value))
+		self.repoSyncLabel = value
+
+	def initRepo(self):
+		try:
+			self.msgLogger.debug("Initializing Local RepoPath via initRepo() as " + str(self.localRepoPath))
+			self.__localRepoHandle = Repo.init(self.localRepoPath, bare=False)
+		except:
+			self.msgLogger.error("Failed to initialize local RepoPath via initRepo()")
+			raise
+	
+	def initRemoteRepo(self):
+		try:
+			self.msgLogger.debug("Initializing Remote RepoPath via initRemoteRepo() as " + str(self.remoteRepoPath))
+			self.__remoteRepoHandle = self.__localRepoHandle.create_remote('origin', str(self.remoteRepoPath))
+		except:
+			self.msgLogger.error("Failed to initialize remote Repot Path via initRemoteRepot()")
+			raise
+
+	def remoteFetch(self):
+		try:
+			self.msgLogger.debug("Running GIT FETCH on remote repo")
+			self.__remoteRepoHandle.fetch()
+		except:
+			self.msgLogger.error("Failed to execute GIT FETCH on remote repo via remoteFetch()")
+			raise
+
+	def checkoutBranch(self, branchname):
+		try:
+			# byHand.git.checkout('remotes/origin/v2.0')
+			self.msgLogger.debug("Running GIT CHECKOUT on remote repo and branch")
+			self.__localRepoHandle.git.checkout("remotes/origin/" + branchname)
+		except:
+			self.msgLogger.error("Failed to check out branch " + branchname)
+			raise
+
+
+	def checkoutTag(self, tag):
+		try:
+			# byHand.git.checkout('v2.0.0.3')
+			self.msgLogger.debug("Running GIT CHECKOUT on remote repo and branch")
+			self.__localRepoHandle.git.checkout(tag)
+		except:
+			self.msgLogger.error("Failed to check out branch " + tag)
+			raise
+
+	def testMe(self):
+		print "******************************************************************************"
+		print " Process: " + str(self) 
+		print " testMe() output"
+		print "------------------------------------------------------------------------------"
+		print "    Remote Repo Path    : " + str(self.remoteRepoPath)
+		print "    Local Repo Path     : " + str(self.localRepoPath)
+		print "    Repo Branch         : " + str(self.repoBranch)
+		print "    Sync Label          : " + str(self.repoSyncLabel)
+		print "******************************************************************************"
+
+
 
 
 def main():
@@ -747,25 +861,100 @@ def main():
 	if not ( cmdOpts.getSkipSelfSync() ):
 
 		cLogger.debug("START -- Syncing Build System...")
+
 		###
 		### Pull in BuildSystem
 		###
+		try:
+			cLogger.debug("Creating Self-Sync BuildObject")
+			selfsyncB = builderObject(cmdOpts.getVerbosity())
+		except:
+			cLogger.critical("Failed to create a Self-Sync BuildObject")
+			exit(1)
+
+		cLogger.debug("Pushing Command-Line specified Workspace into selfsyncB")
+		selfsyncB.setWorkspace(cmdOptsDict.get("workspace"))
+
+		try:
+			cLogger.debug("Creating Self-Sync BSRObject")
+			selfsyncBSR = localBSR(cmdOpts.getVerbosity(), selfsyncB)
+			cLogger.debug("Resetting BuildSystem Path from BSR Default")
+			selfsyncBSR.resetBuildSystemPath()
+		except:
+			cLogger.critical("Failed to Create Self-Sync BSRObject")
+			exit(1)
+
+		try:
+			cLogger.debug("Creating Self-Sync GIT Object")
+			selfsyncGIT = gitObject(cmdOptsDict.get("verbosity"))
+		except:
+			cLogger.critical("Failed to Create Self-Sync GIT Object")
+			exit(1)
+
+		try:
+			cLogger.debug("Creating Build System Path")
+			os.makedirs(selfsyncBSR.getBuildSystemPath())	
+		except:
+			cLogger.critical("Failed to Create Build System Path " + str(selfsyncBSR.getBuildSystemPath()))
+			exit(1)
+
+		cLogger.debug("Setting RemoteRepoPath")
+		selfsyncGIT.setRemoteRepoPath("git://github.com/zeathe/Constructicon.git")
+		cLogger.debug("Setting LocalRepoPath")
+		selfsyncGIT.setLocalRepoPath(selfsyncBSR.getBuildSystemPath())
+		cLogger.debug("Setting RepoBranch")
+		selfsyncGIT.setRepoBranch("master")
+
+		try:
+			cLogger.debug("selfsyncGIT Init Local Repo")
+			selfsyncGIT.initRepo()
+		except:
+			exit(1)
+
+		try:
+			cLogger.debug("selfsyncGIT Init Remote Repo")
+			selfsyncGIT.initRemoteRepo()
+		except:
+			exit(1)
+
+		try:
+			cLogger.debug("selfsyncGIT Remote Fetch")
+			selfsyncGIT.remoteFetch()
+		except:
+			exit(1)
+
+		try:
+			cLogger.debug("selfsyncGIT checkout master")
+			selfsyncGIT.checkoutBranch("master")
+		except:
+			exit(1)
+
+
+
 
 		# Check for current build system
 			# Verify Manifest of current build system
+			# To-Do: Write Manifest Check Code
 
 		# Pull in BuildSystem
 			# Verify Manifest of received build system
 
-		# Re-Execute Constructicon (call --skipselfsync)
-		cLogger.critical("Constructicon Self-Sync method NOT IMPLEMENTED...")
+		# ArgV is ['constructicon.py', '--repopath', 'git@github.com:zeathe/Constructicon-TestDevDepot.git', '--buildtype', 'local', '--workspace=/tmp/contest']
+		recycleCMDLine = ""
 
-		cLogger.debug("END -- Syncing Build System...")
-		cLogger.debug("Recalling Constructicon...")
+		for arg in sys.argv[1:]:
+			recycleCMDLine += arg + " "
 
-		cLogger.critical("Recalling Constructicon method NOT IMPLEMENTED...")
-		# TO-DO: Fix Self-Syncing
+		#cLogger.critical("CommandLine Would Be: blah blah constructicon.py " + recycleCMDLine + " --skipselfsync")
+		# selfsyncBSR.getBuildSystemPath()
+		print selfsyncBSR.getBuildSystemPath() + os.sep + "python" + os.sep + "python.mac.sh" + " " + selfsyncBSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "constructicon.py " + str(sys.argv) + " --skipselfsync"
+		#exit(RetVal)
 		exit(69)
+
+
+		# Re-Execute Constructicon (call --skipselfsync)
+
+		# TO-DO: Fix Self-Syncing
 	else:
 
 		# ----------------------------------------------------------------------
@@ -841,24 +1030,174 @@ def main():
 
 		cLogger.debug("END -- builderObject b Instantiation")
 
-		cLogger.debug("START -- Verifying Sources, Versions, and Labels...")
+		# ----------------------------------------------------------------------
+		# Set up Build System Root (BSR)
+		# ----------------------------------------------------------------------
+
+		if not (b.getBuildFailed()):
+
+			cLogger.debug("START -- building up BSR...")
+			try:
+				BSR = localBSR(cmdOptsDict.get("verbosity"), b)
+			except:
+				cLogger.critical("Failed to create BSR LocalBSR object...")
+				exit(1)
+
+			if ( cmdOpts.getSpewie() ):
+				BSR.testMe()
+
+
+			### Set up Workspace (either defined workspace or standard mountpoint)
+
+			# Variables that we already have in localBSR Object
+			# localBSRObj.getWorkspace		=	Workspace Root Location
+			# localBRSObj.getBuildSystemPath	=	Build System Path 
+			#						(where Constructicon would be sync'd and second-Run)
+			# localBSRObj.getProjectPath		=	Source Code Sync Point (for local and offical builds)
+			# localBSRObj.getOutputPath		-	Objects/BuildLogs/Deliverables "BSLandingZone"
+
+			# Make mount points
+			#cLogger.debug("Creating BSR Build System Path : " + str(BSR.getBuildSystemPath()))
+			#os.makedirs(BSR.getBuildSystemPath())
+			cLogger.debug("Creating BSR Output Path       : " + str(BSR.getOutputPath()))
+			os.makedirs(BSR.getOutputPath())
+
+			# Prep directory structure
+
+			# IF BuildType IS dev.... and RepoPath is file share.... link into ProjectPath
+			if ( None != b.getFilePath() ):
+				cLogger.debug("Linking FilePath " + str(b.getFilePath()) + " to ProjectPath " + str(BSR.getProjectPath()))
+				try:
+					os.link(b.getFilePath(), BSR.getProjectPath())
+				except:
+					cLogger.critical("Failed to Link FilePath " + str(b.getFilePath()) + " to ProjectPath " + str(BSR.getProjectPath()))
+					exit(1)
+			else:
+				if ( None != b.getRepoPath() ):
+					cLogger.debug("Creating BSR Project Path      : " + str(BSR.getProjectPath()))
+					os.makedirs(BSR.getProjectPath())
+				else:
+					cLogger.critical("Major Problem.... No FilePath or RepoPath. We fell into a trap we should never hit...")
+					exit(1)
+
+
+			cLogger.debug("END -- BSR built up...")
+
 
 		# ----------------------------------------------------------------------
 		# Verify source, version, report back for official builds
 		# ----------------------------------------------------------------------
 
-		### Get Version
-		if ( None == b.getFilePath() and None != b.getRepoPath() ):
-			### Verify Repo
+		if not (b.getBuildFailed()):
 
-			# IF BuildType is NOT dev.... Verify RepoPath is a valid GIT object
+			cLogger.debug("START -- Verifying Sources, Versions, and Labels...")
 
-			# IF BuildType IS dev.... and RepoPath is a GIT Object.... verify GIT object
+			### Get Version
+			if ( None == b.getFilePath() and None != b.getRepoPath() ):
 
-			if ( "official" == str.tolower( b.getBuildType() ) ):
+				### Verify Remote Repo
+				
+				# Verify RepoPath is a valid GIT object
 
-				# If SyncLabel is NOT specified....
-				if ( None == b.getSyncLabel() ):
+				# Get ourselves a working local repo of the remote
+
+				# Create Local Repo Space to work in
+				try:
+					cLogger.debug("Initializing gitHandle via gitObject()")
+					gitHandle = gitObject(cmdOptsDict.get("verbosity"))
+				except:
+					cLogger.critical("Failed to create gitObject")
+					b.setBuildFailed()
+
+				cLogger.debug("Configuring gitHandle via gitHandle.setXXX(): Setting Remote Repo Path")
+				gitHandle.setRemoteRepoPath(b.getRepoPath())
+				cLogger.debug("Configuring gitHandle via gitHandle.setXXX(): Setting Local Repo Path")
+				gitHandle.setLocalRepoPath(BSR.getProjectPath())
+				cLogger.debug("Configuring gitHandle via gitHandle.setXXX(): Setting Repo Branch")
+				gitHandle.setRepoBranch(b.getBranch())
+				cLogger.debug("Configuring gitHandle via gitHandle.setXXX(): Setting Repo Sync Label")
+				gitHandle.setRepoSyncLabel(b.getSyncLabel())
+
+				if ( cmdOpts.getSpewie() ):
+					gitHandle.testMe()
+
+				# $ mkdir /path/to/local/repo
+				# $ pushd /path/to/local/repo
+				# $ git init
+				try:
+					cLogger.debug("Calling gitHandle.initRepo()")
+					gitHandle.initRepo()
+				except:
+					cLogger.critical("Failed to Initialize Local Repo")
+					b.setBuildFailed()
+
+
+				# $ git remote add origin b.getRemoteRepoPath()
+				try:
+					cLogger.debug("Calling gitHandle.initRemoteRepo()")
+					gitHandle.initRemoteRepo()
+				except:
+					cLogger.critical("Failed to Initialize Remote Repo")
+					b.setBuildFailed()
+
+
+
+				# $ git fetch
+				try:
+					cLogger.debug("Calling gitHandle.remoteFetch()")
+					gitHandle.remoteFetch()
+				except:
+					cLogger.critical("Failed to FETCH from Remote Repo")
+					b.setBuildFailed()
+
+
+
+				# $ git checkout remotes/origin/b.getBranch()
+				try:
+					cLogger.debug("Attempting to checkout branch " + str(b.getBranch()))
+					gitHandle.checkoutBranch(b.getBranch())
+				except:
+					cLogger.critical("Failed to checkout branch " + str(b.getBranch()))
+					b.setBuildFailed()
+
+				# This assumes the state of the command-line specified Tag
+				if ( None != b.getSyncLabel() ):
+
+					try:
+						cLogger.debug("Attempting to checkout branch " + str(b.getSyncLabel()))
+						gitHandle.checkoutTag(b.getSyncLabel())
+					except:
+						cLogger.critical("Failed to checkout " + str(b.getSyncLabel()))
+						b.setBuildFailed()
+
+
+
+
+				# If git branch isn't in the form of vNUM.NUM -- ie "foo" -- Assume Major and Minor are zero (v0.0)
+				#    (ie Branch is not Constructicon-friendly)
+				# ... otherwise grab the %Major% and %Minor% from the branch as v(%Major%).(%Minor%)
+
+				# If git branch is "master" -- Assume Major version of 1000 and minor version of 0 (v1000.0)
+
+				# Within the project at the source root, find .constructicon.maintenance file...
+				# ... The numeric value in here is %Maint%
+				# ... if .constructicon.maintenance is absent, set %Maint% to 0
+
+				# Set Major Minor Maint BuildID
+				# b.setMajorVersion(##MAJOR##)
+				# b.setMinorVersion(##MINOR##)
+				# b.setMaintVersion(##MAINT##)
+				# b.setBuildID(##BUIDID##)
+
+
+				if ( "official" == str.lower( b.getBuildType() ) ):
+
+					# Construct the tag pattern as %BRANCH%-v0.0.%Maint% for non-friendly branches
+
+					# Construct the tag pattern as v1000.0.%Maint% for master
+
+					# Construct the tag pattern as v%major%.%Minor%.%Maint% for friendly branches.... Let's assume v1.3
+
 					# If BuildType is Official.... Ascertain versions already built and Inc Ver
 
 					# If BuildType is Official.... push new Inc Version back into source control
@@ -866,30 +1205,88 @@ def main():
 					# If BuildType is Official.... Create Sync State Label using Inc Ver at HEAD
 					# b.setSyncLabel(##NEW SYNC LABEL##)
 
-					# Set Major Minor Maint BuildID
-					# b.setMajorVersion(##MAJOR##)
-					# b.setMinorVersion(##MINOR##)
-					# b.setMaintVersion(##MAINT##)
+					# If BuildType is Official.... Ascertain versions already built and Inc Ver
+
+					# $ git tag -l <tag pattern>*
+					# ... step through it
+
+					# Resulting Tags should be v1000.0.x.N for Master
+					#                    %BRANCH%-v0.0.x.N for non-friendly
+					#                             v1.3.x.N for friendly
+					#
+					# ... Where N is a returning series of somewhat contiguous, but possibly gapped numbers
+
+					# Decide the next version... Set Versions
+					#					master	foo	v1.3
+					#     b.setMajorVersion(%Major%) 	1000	0	1
+					#     b.setMinorVersion(%Minor%) 	0	0	3
+					#     b.setMaintVersion(%Maint%) 	x	x	x
+					#     b.setBuildID(%BuildID%)		y	y	y
+					#
+					# ... Where X = %Maint% and Y = %BuildID%
+					
+					# Set new BuildID
 					# b.setBuildID(##BUIDID##)
-					pass
 
-				# If SyncLabel IS specified....
-				if ( None != b.getSyncLabel() ):
-					if not ( cmdOpts.getForceNewLabel() ): 
-						cLogger.error("You are generating a new official build in the same state as a previous label: " + str(b.getSyncLabel()))
-						cLogger.error("...you must specify --forcenewlabel to make this happen")
 
-						# It is okay to blow out here as official builds won't leave behind a link
-						exit(1)
-					else:
-						cLogger.warning("You are generating a new official build in the same state as a previous label: " + str(b.getSyncLabel()))
-						# If BuildType is Official.... Ascertain versions already built and Inc Ver
+					# If SyncLabel is NOT specified....
+					if ( None == b.getSyncLabel() ):
+
+						# tagname = v%Major%.%Minor%.%Maint%.%BuildID% or whatever above (friendly vs unfriendly)
+						# $ git tag -a -m "AutoIncrement Blah Blah Blah" <tagname> (AT HEAD)
 
 						# If BuildType is Official.... push new Inc Version back into source control
 
-						# If BuildType is Official.... Create Sync State Label using Inc Ver at b.getSyncLabel()
-						# b.setSyncLabel(##NEW SYNC LABEL##)
-						# note that ##NEW SYNC LABEL## is actually a copy of ##OLD SYNC LABEL##
+						# $ git push origin --tags
+
+						# b.setSyncLabel(<tagname>)
+
+						cLogger.critical("METHOD NOT IMPLEMENTED")
+						b.setBuildFailed()
+
+					# If SyncLabel IS specified....
+					if ( None != b.getSyncLabel() ):
+						if not ( cmdOpts.getForceNewLabel() ): 
+							cLogger.error("You are generating a new official build in the same state as a previous label: " + str(b.getSyncLabel()))
+							cLogger.error("...you must specify --forcenewlabel to make this happen")
+
+							# It is okay to blow out here as official builds won't leave behind a link in the Project node
+							exit(1)
+						else:
+							cLogger.warning("You are generating a new official build in the same state as a previous label: " + str(b.getSyncLabel()))
+							# If BuildType is Official.... push new Inc Version back into source control
+
+							# tagname = v%Major%.%Minor%.%Maint%.%BuildID% or whatever above (friendly vs unfriendly)
+							# $ git tag -a -m "AutoIncrement Blah Blah Blah" <tagname> <b.getSyncLabel()>
+
+
+							# $ git push origin --tags
+
+							# b.setSyncLabel(<tagname>)
+							# note that ##NEW SYNC LABEL## is actually a copy o
+
+							cLogger.critical("METHOD NOT IMPLEMENTED")
+							b.setBuildFailed()
+
+				if ( "local" == str.lower( b.getBuildType() ) ):
+
+					if ( None == b.getSyncLabel() ):
+						# If BuildType is Local.... Identify latest successful build version Label
+
+						# Sync to the label b.getBranchName()-LATEST
+						# b.setSyncLabel(##LastSuccessfulBuild##)
+
+						cLogger.debug("No Sync Label specified on LOCAL BuildType...")
+						cLogger.debug("Auto-Syncing to the Tag " + str(b.getBranch()) + "-LATEST")
+
+						b.setSyncLabel(str(b.getBranch()) + "-LATEST")
+
+						try:
+							cLogger.debug("Attempting to checkout branch " + str(b.getSyncLabel()))
+							gitHandle.checkoutTag(b.getSyncLabel())
+						except:
+							cLogger.critical("Failed to checkout branch " + str(b.getSyncLabel()))
+							b.setBuildFailed()
 
 						# Set Major Minor Maint BuildID
 						# b.setMajorVersion(##MAJOR##)
@@ -897,250 +1294,196 @@ def main():
 						# b.setMaintVersion(##MAINT##)
 						# b.setBuildID(##BUIDID##)
 
-			if ( "local" == str.tolower( b.getBuildType() ) ):
+				if ( "dev" == str.lower( b.getBuildType() ) ):
+					if ( None == b.getSyncLabel() ):
+						# Get SHA of HEAD
+						# b.setSyncLabel(##HEAD SHA###)
 
-				if ( None == b.getSyncLabel() ):
-					# If BuildType is Local.... Identify latest successful build version Label
-					# b.setSyncLabel(##LastSuccessfulBuild##)
-
-					# Set Major Minor Maint BuildID
-					# b.setMajorVersion(##MAJOR##)
-					# b.setMinorVersion(##MINOR##)
-					# b.setMaintVersion(##MAINT##)
-					# b.setBuildID(##BUIDID##)
-					pass
-
-			if ( "dev" == str.tolower( b.getBuildType() ) ):
-				if ( None == b.getSyncLabel() ):
-					# Get SHA of HEAD
-					# b.setSyncLabel(##HEAD SHA###)
-
-					# Set Major Minor Maint BuildID
-					# b.setMajorVersion(##MAJOR##)
-					# b.setMinorVersion(##MINOR##)
-					# b.setMaintVersion(##MAINT##)
-					# b.setBuildID(##BUIDID##)
-					pass
+						# Set Major Minor Maint BuildID
+						# b.setMajorVersion(##MAJOR##)
+						# b.setMinorVersion(##MINOR##)
+						# b.setMaintVersion(##MAINT##)
+						# b.setBuildID(##BUIDID##)
+						cLogger.critical("METHOD NOT IMPLEMENTED")
+						b.setBuildFailed()
 
 
-			# Set SyncLabel to defined above labels either found or generated...
-			# ....by the time we're here --  b.getSyncLabel() should just return what we need
+				# Set SyncLabel to defined above labels either found or generated...
+				# ....by the time we're here --  b.getSyncLabel() should just return what we need
 
-			# Verify SyncLabel specified is in source control and exists
+				# Verify SyncLabel specified is in source control and exists
 
-			# If SyncLabel IS Specified.... Use SyncLabel if verified exists
-			
-			# If BuildType is Local or Official.... Sync BSR to Branch/Version Label
-		else:
-			# If BuildType is Dev and FILEPATH.... Skip SyncState (this allows building with rogue code)
-			
-			# Set Major Minor Maint BuildID
-			b.setMajorVersion(0)
-			b.setMinorVersion(0)
-			b.setMaintVersion(0)
-			b.setBuildID(0)
-
-
-		cLogger.debug("END -- Verifying Sources, Versions, and Labels...")
-
-		# ----------------------------------------------------------------------
-		# Set up Build System Root (BSR)
-		# ----------------------------------------------------------------------
-
-		cLogger.debug("START -- building up BSR...")
-		try:
-			BSR = localBSR(cmdOptsDict.get("verbosity"), b)
-		except:
-			cLogger.critical("Failed to create BSR LocalBSR object...")
-			exit(1)
-
-		if ( cmdOpts.getSpewie() ):
-			BSR.testMe()
-
-
-		if ( cmdOpts.getSpewie() ):
-			b.testMe()
-
-		### Set up Workspace (either defined workspace or standard mountpoint)
-
-		# Variables that we already have in localBSR Object
-		# localBSRObj.getWorkspace		=	Workspace Root Location
-		# localBRSObj.getBuildSystemPath	=	Build System Path 
-		#						(where Constructicon would be sync'd and second-Run)
-		# localBSRObj.getProjectPath		=	Source Code Sync Point (for local and offical builds)
-		# localBSRObj.getOutputPath		-	Objects/BuildLogs/Deliverables "BSLandingZone"
-
-		# Make mount points
-		#cLogger.debug("Creating BSR Build System Path : " + str(BSR.getBuildSystemPath()))
-		#os.makedirs(BSR.getBuildSystemPath())
-		cLogger.debug("Creating BSR Output Path       : " + str(BSR.getOutputPath()))
-		os.makedirs(BSR.getOutputPath())
-
-		# Prep directory structure
-
-		# IF BuildType IS dev.... and RepoPath is file share.... link into ProjectPath
-		if ( None != b.getFilePath() ):
-			cLogger.debug("Linking FilePath " + str(b.getFilePath()) + " to ProjectPath " + str(BSR.getProjectPath()))
-			try:
-				os.link(b.getFilePath(), BSR.getProjectPath())
-			except:
-				cLogger.critical("Failed to Link FilePath " + str(b.getFilePath()) + " to ProjectPath " + str(BSR.getProjectPath()))
-				exit(1)
-		else:
-			if ( None != b.getRepoPath() ):
-				cLogger.debug("Creating BSR Project Path      : " + str(BSR.getProjectPath()))
-				os.makedirs(BSR.getProjectPath())
+				# If SyncLabel IS Specified.... Use SyncLabel if verified exists
+				
+				# If BuildType is Local or Official.... Sync BSR to Branch/Version Label
 			else:
-				cLogger.critical("Major Problem.... No FilePath or RepoPath. We fell into a trap we should never hit...")
-				exit(1)
+				# If BuildType is Dev and FILEPATH.... Skip SyncState (this allows building with rogue code)
+				
+				# Set Major Minor Maint BuildID
+				b.setMajorVersion(0)
+				b.setMinorVersion(0)
+				b.setMaintVersion(0)
+				b.setBuildID(0)
 
 
-		cLogger.debug("END -- BSR built up...")
+			cLogger.debug("END -- Verifying Sources, Versions, and Labels...")
 
-		cLogger.debug("START -- Pulling in Project sources")
 
 		# ----------------------------------------------------------------------
-		# Sync the Code
+		# Sync the Code (Obsolete -- checkout is performed above)
 		# ----------------------------------------------------------------------
 
-		if ( None != b.getRepoPath() and True != b.getBuildFailed() ):
-			### Pull in Source
-			pass
+		#if not (b.getBuildFailed()):
+
+		#	cLogger.debug("START -- Pulling in Project sources")
+
+		#	if ( None != b.getRepoPath() and True != b.getBuildFailed() ):
+		#		### Pull in Source
+		#		cLogger.critical("NOT IMPLEMENTED: Sync the Code")
+		#		b.setBuildFailed()
 
 
-		cLogger.debug("END -- Pulling in Project sources")
+		#	cLogger.debug("END -- Pulling in Project sources")
 
-
-
-		cLogger.debug("START -- Dumping key variables")
 
 		# ----------------------------------------------------------------------
 		# Provide build variables and debugging output
 		# ----------------------------------------------------------------------
 
-		### Dump Debug Info
+		if not (b.getBuildFailed()):
 
-		# Dump Debug Info
-		print "*** BUILD INFORMATION ********************************************************"
-		print ""
-		print "Local Build FS Info..."
-		print "------------------------------------------------------------------------------"
-		print "    Workspace           : " + str(BSR.getWorkspace())
-		print "    buildSystemPath     : " + str(BSR.getBuildSystemPath())
-		print "    projectPath         : " + str(BSR.getProjectPath())
-		print "    outputPath          : " + str(BSR.getOutputPath())
-		print ""
-		print " Build Generics..."
-		print "------------------------------------------------------------------------------"
-		print "    BuildType           : " + str(b.getBuildType())
-		print "    RepoPath            : " + str(b.getRepoPath())
-		print "    FilePath            : " + str(b.getFilePath())
-		print "    SyncLabel           : " + str(b.getSyncLabel())
-		print "    Branch              : " + str(b.getBranch())
-		print "    Workspace           : " + str(b.getWorkspace())
-		print "    PublishPath         : " + str(b.getPublishPath())
-		print ""
-		print " Build Versioning Info..."
-		print "------------------------------------------------------------------------------"
-		print "    Major Version       : " + str(b.getMajorVersion())
-		print "    Minor Version       : " + str(b.getMinorVersion())
-		print "    Maintenance Version : " + str(b.getMaintVersion())
-		print "    Build ID            : " + str(b.getBuildID())
-		print ""
-		print "******************************************************************************"
+			cLogger.debug("START -- Dumping key variables")
 
-		cLogger.debug("Setting Environment Variables...")
+			### Dump Debug Info
 
-		cLogger.debug("Setting Local Build FS LandingZone...")
-		os.putenv("BSLandingZone", str(BSR.getOutputPath()))
-		cLogger.debug("Setting Local Build FS ProjectPath...")
-		os.putenv("basedir", str(BSR.getProjectPath()))
+			# Dump Debug Info
+			print "*** BUILD INFORMATION ********************************************************"
+			print ""
+			print "Local Build FS Info..."
+			print "------------------------------------------------------------------------------"
+			print "    Workspace           : " + str(BSR.getWorkspace())
+			print "    buildSystemPath     : " + str(BSR.getBuildSystemPath())
+			print "    projectPath         : " + str(BSR.getProjectPath())
+			print "    outputPath          : " + str(BSR.getOutputPath())
+			print ""
+			print " Build Generics..."
+			print "------------------------------------------------------------------------------"
+			print "    BuildType           : " + str(b.getBuildType())
+			print "    RepoPath            : " + str(b.getRepoPath())
+			print "    FilePath            : " + str(b.getFilePath())
+			print "    SyncLabel           : " + str(b.getSyncLabel())
+			print "    Branch              : " + str(b.getBranch())
+			print "    Workspace           : " + str(b.getWorkspace())
+			print "    PublishPath         : " + str(b.getPublishPath())
+			print ""
+			print " Build Versioning Info..."
+			print "------------------------------------------------------------------------------"
+			print "    Major Version       : " + str(b.getMajorVersion())
+			print "    Minor Version       : " + str(b.getMinorVersion())
+			print "    Maintenance Version : " + str(b.getMaintVersion())
+			print "    Build ID            : " + str(b.getBuildID())
+			print ""
+			print "******************************************************************************"
 
-		cLogger.debug("Setting Local Build Generics BuildType...")
-		os.putenv("constructicon.buildtype", str(b.getBuildType()))
-		cLogger.debug("Setting Local Build Generics RepoPath...")
-		os.putenv("constructicon.repopath", str(b.getRepoPath()))
-		cLogger.debug("Setting Local Build Generics FilePath...")
-		os.putenv("constructicon.filepath", str(b.getFilePath()))
-		cLogger.debug("Setting Local Build Generics SyncLabel...")
-		os.putenv("constructicon.synclabel", str(b.getSyncLabel()))
-		cLogger.debug("Setting Local Build Generics Branch...")
-		os.putenv("constructicon.branch", str(b.getBranch()))
-		cLogger.debug("Setting Local Build Generics Workspace...")
-		os.putenv("constructicon.workspace", str(b.getWorkspace()))
-		cLogger.debug("Setting Local Build Generics PublishPath...")
-		os.putenv("constructicon.publishpath", str(b.getPublishPath()))
+			cLogger.debug("Setting Environment Variables...")
 
-		cLogger.debug("Setting Local Build Version Major...")
-		os.putenv("constructicon.majorversion", str(b.getMajorVersion()))
-		cLogger.debug("Setting Local Build Version Minor...")
-		os.putenv("constructicon.minorversion", str(b.getMinorVersion()))
-		cLogger.debug("Setting Local Build Version Maintenance...")
-		os.putenv("constructicon.maintenanceversion", str(b.getMaintVersion()))
-		cLogger.debug("Setting Local Build Version BuildID...")
-		os.putenv("constructicon.buildid", str(b.getBuildID()))
+			cLogger.debug("Setting Local Build FS LandingZone...")
+			os.putenv("BSLandingZone", str(BSR.getOutputPath()))
+			cLogger.debug("Setting Local Build FS ProjectPath...")
+			os.putenv("basedir", str(BSR.getProjectPath()))
 
-		os.putenv("antbuildxml", BSR.getProjectPath() + os.sep + "build.xml")
-		os.putenv("antbuildtarget", "default")
+			cLogger.debug("Setting Local Build Generics BuildType...")
+			os.putenv("constructicon.buildtype", str(b.getBuildType()))
+			cLogger.debug("Setting Local Build Generics RepoPath...")
+			os.putenv("constructicon.repopath", str(b.getRepoPath()))
+			cLogger.debug("Setting Local Build Generics FilePath...")
+			os.putenv("constructicon.filepath", str(b.getFilePath()))
+			cLogger.debug("Setting Local Build Generics SyncLabel...")
+			os.putenv("constructicon.synclabel", str(b.getSyncLabel()))
+			cLogger.debug("Setting Local Build Generics Branch...")
+			os.putenv("constructicon.branch", str(b.getBranch()))
+			cLogger.debug("Setting Local Build Generics Workspace...")
+			os.putenv("constructicon.workspace", str(b.getWorkspace()))
+			cLogger.debug("Setting Local Build Generics PublishPath...")
+			os.putenv("constructicon.publishpath", str(b.getPublishPath()))
+
+			cLogger.debug("Setting Local Build Version Major...")
+			os.putenv("constructicon.majorversion", str(b.getMajorVersion()))
+			cLogger.debug("Setting Local Build Version Minor...")
+			os.putenv("constructicon.minorversion", str(b.getMinorVersion()))
+			cLogger.debug("Setting Local Build Version Maintenance...")
+			os.putenv("constructicon.maintenanceversion", str(b.getMaintVersion()))
+			cLogger.debug("Setting Local Build Version BuildID...")
+			os.putenv("constructicon.buildid", str(b.getBuildID()))
+
+			os.putenv("antbuildxml", BSR.getProjectPath() + os.sep + "build.xml")
+			os.putenv("antbuildtarget", "default")
 
 
-		cLogger.debug("END -- Dumping key variables")
+			cLogger.debug("END -- Dumping key variables")
 
-
-		cLogger.debug("START -- Building Project")
 
 		# ----------------------------------------------------------------------
 		# Build and Return Status
 		# ----------------------------------------------------------------------
 
-		### Build
+		if not (b.getBuildFailed()):
 
-		# Execute ANT against Constructicon build.xml
-		
-		# $ pushd /path/to/BuildSystem/scripts
-		# $ ../ant/bin/ant -Denv.BSLandingZone=/path/to/OUTDIR/<version> -Denv.antbuildxml=/path/to/project/root/<version> -Denv.antbuildtarget=default
-		# $ popd
-		try:
-			cLogger.debug("Calling Ant...")
-			BuildRetVal = os.system(BSR.getBuildSystemPath() + os.sep + "ant" + os.sep + "bin" + os.sep + "ant" + " -logger org.apache.tools.ant.listener.BigProjectLogger " + " -logfile " + BSR.getOutputPath() + os.sep + "constructicon.ant.log.txt " + "-f" + " " + BSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "build.xml")
-		except:
-			cLogger.error("Failed to launch ANT build")
-			b.setBuildFailed()
+			cLogger.debug("START -- Building Project")
 
-		if ( 0 < BuildRetVal ):
-			cLogger.error("Build returned non-zero output of [" + str(BuildRetVal) + "]")
-			b.setBuildFailed()
+			### Build
 
-		### Verify
+			# Execute ANT against Constructicon build.xml
+			
+			# $ pushd /path/to/BuildSystem/scripts
+			# $ ../ant/bin/ant -Denv.BSLandingZone=/path/to/OUTDIR/<version> -Denv.antbuildxml=/path/to/project/root/<version> -Denv.antbuildtarget=default
+			# $ popd
+			try:
+				cLogger.debug("Calling Ant...")
+				BuildRetVal = os.system(BSR.getBuildSystemPath() + os.sep + "ant" + os.sep + "bin" + os.sep + "ant" + " -logger org.apache.tools.ant.listener.BigProjectLogger " + " -logfile " + BSR.getOutputPath() + os.sep + "constructicon.ant.log.txt " + "-f" + " " + BSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "build.xml")
+			except:
+				cLogger.error("Failed to launch ANT build")
+				b.setBuildFailed()
 
-		# If BuildType is Official.... Report version as Successful or Failure for build
+			if ( 0 < BuildRetVal ):
+				cLogger.error("Build returned non-zero output of [" + str(BuildRetVal) + "]")
+				b.setBuildFailed()
 
-		cLogger.debug("END -- Building Project")
+			### Verify
 
-		cLogger.debug("START -- Publishing Deliverables...")
+			# If BuildType is Official.... Report version as Successful or Failure for build
+
+			cLogger.debug("END -- Building Project")
+
 
 		# ----------------------------------------------------------------------
 		# Publish for official builds
 		# ----------------------------------------------------------------------
 
-		### Publish
+		if not (b.getBuildFailed()):
 
-		# If BuildType is Official and PublishPath is Specified....
+			cLogger.debug("START -- Publishing Deliverables...")
 
-		# 	Verify Specified Publish Path
+			### Publish
 
-		# 	Create New location
-			##PUBLISH PATH##/{FAILED|SUCCESSFUL}BUILDS/##BUILDTYPE##/##REPOPATH|FILEPATH##/##BRANCH##/##SYNCLABEL##
+			# If BuildType is Official and PublishPath is Specified....
 
-		#       Copy Deliverables from Workspace to Publish path
+			# 	Verify Specified Publish Path
 
-		cLogger.debug("END -- Publishing Deliverables...")
+			# 	Create New location
+				##PUBLISH PATH##/{FAILED|SUCCESSFUL}BUILDS/##BUILDTYPE##/##REPOPATH|FILEPATH##/##BRANCH##/##SYNCLABEL##
 
-		cLogger.debug("START -- Post Processing and Clean-Up...")
+			#       Copy Deliverables from Workspace to Publish path
+
+			cLogger.debug("END -- Publishing Deliverables...")
+
+
 
 		# ----------------------------------------------------------------------
 		# Unlinking
 		# ----------------------------------------------------------------------
+
+		cLogger.debug("START -- Post Processing and Clean-Up...")
 
 		### Unlink the sources
 
@@ -1160,6 +1503,12 @@ def main():
 		#       Copy Deliverables from Workspace to Publish path
 
 		cLogger.debug("END -- Post Processing and Clean-Up...")
+
+
+
+		# ----------------------------------------------------------------------
+		# Final Results
+		# ----------------------------------------------------------------------
 
 		if not ( b.getBuildFailed() ):
 			cLogger.debug("Build Completed Successfully...")
