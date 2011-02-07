@@ -119,7 +119,7 @@ official - builds an official build updating tags and versions with the defined 
 		self.cmdlineparser.add_option("-f", "--filepath", dest="filepath", type="string", help="file path to buid from... ie: /path/to/sources.  This is mutually exclusive to RepoPath")
 		self.cmdlineparser.add_option("--synclabel", dest="synclabel", type="string", help="sync repopath to given sha, tag, or branch (at head)")
 
-		self.cmdlineparser.add_option("--branch", dest="branch", type="string", help="GIT branch to sync from within the repository")
+		self.cmdlineparser.add_option("--branch", dest="branch", type="string", help="GIT branch to sync from within the repository. Defaults to 'master' if not specified.")
 
 		self.cmdlineparser.add_option("--workspace", dest="workspace", type="string", help="output path for build.... otherwise, a mount volume is used.")
 
@@ -141,6 +141,20 @@ official - builds an official build updating tags and versions with the defined 
 		# Perform several sanity checks for the command-line variables provided
 			#               1         2         3         4         5         6         7         8
 			#      12345678901234567890123456789012345678901234567890123456789012345678901234567890
+		if ( None == self.cmdOpts.buildtype ):
+			print("ERROR: --BUILDTYPE is a required flag")
+			print("")
+			print("...Try using --help")
+			print("")
+			raise
+
+		if ( None == self.cmdOpts.branch ):
+			print("ERROR: --BRANCH is a required flag")
+			print("")
+			print("...Try using --help")
+			print("")
+			raise
+
 		if ( self.cmdOpts.quiet != None and 0 < self.cmdOpts.verbosity):
 			print("ERROR: --quiet specified while --verbose was also specified, this is just silly")
 			print("")
@@ -164,17 +178,32 @@ official - builds an official build updating tags and versions with the defined 
 
 		if ( None != self.cmdOpts.synclabel and None != self.cmdOpts.filepath ):
 			print("ERROR: You don't get Source Control Labels on --FILEPATH")
+			print("...For local Repo locations, use --REPOPATH and provide the local path")
 			print("")
 			print("...Try using --help")
 			print("")
 			raise
 
-		if ( None == self.cmdOpts.buildtype ):
-			print("ERROR: --BUILDTYPE is a required flag")
-			print("")
-			print("...Try using --help")
-			print("")
-			raise
+		if (None != self.cmdOpts.synclabel):
+			labelCheck = str(self.cmdOpts.synclabel)
+			if ( "master" == str.lower(self.cmdOpts.branch) and not (labelCheck.startswith("v1000") or labelCheck.startswith( "master" ) ) ):
+				print("ERROR: Specified --BRANCH is not within convention with specified --SYNCLABEL")
+				print("...This would result in a build with unexpected check-ins possibly not from")
+				print("the branch specified by --BRANCH.")
+				print("")
+				print("...Try using --help")
+				print("")
+				raise
+
+			if ( "master" != str.lower(self.cmdOpts.branch) and not labelCheck.startswith( str(self.cmdOpts.branch) ) ):
+				print("ERROR: Specified --BRANCH is not within convention with specified --SYNCLABEL")
+				print("...This would result in a build with unexpected check-ins possibly not from")
+				print("the branch specified by --BRANCH.")
+				print("")
+				print("...Try using --help")
+				print("")
+				raise
+
 
 		# Official Build Requirements
 		if ( str.lower("official") == self.cmdOpts.buildtype):
@@ -661,7 +690,7 @@ class localBSR:
 	def resetBuildSystemPath(self):
 		self.buildSystemPath = self.workspace + os.sep + self.pathUUID + os.sep + "BuildSystem" 
 
-	def resetOutputPath(self):
+	def resetOutputPath(self, buildObject):
 		self.outputPath = self.workspace + os.sep + self.pathUUID + os.sep + "OR" + os.sep + "v" + str(buildObject.getMajorVersion()) + "." + str(buildObject.getMinorVersion()) + "." + str(buildObject.getMaintVersion()) + "." + str(buildObject.getBuildID())
 
 	### os-independent mount point maker
@@ -1064,12 +1093,6 @@ def main():
 			# localBSRObj.getProjectPath		=	Source Code Sync Point (for local and offical builds)
 			# localBSRObj.getOutputPath		-	Objects/BuildLogs/Deliverables "BSLandingZone"
 
-			# Make mount points
-			#cLogger.debug("Creating BSR Build System Path : " + str(BSR.getBuildSystemPath()))
-			#os.makedirs(BSR.getBuildSystemPath())
-			cLogger.debug("Creating BSR Output Path       : " + str(BSR.getOutputPath()))
-			os.makedirs(BSR.getOutputPath())
-
 			# Prep directory structure
 
 			# IF BuildType IS dev.... and RepoPath is file share.... link into ProjectPath
@@ -1117,6 +1140,7 @@ def main():
 					cLogger.critical("Failed to create gitObject")
 					b.setBuildFailed()
 
+				# Set values into the GIT object just instantiated
 				cLogger.debug("Configuring gitHandle via gitHandle.setXXX(): Setting Remote Repo Path")
 				gitHandle.setRemoteRepoPath(b.getRepoPath())
 				cLogger.debug("Configuring gitHandle via gitHandle.setXXX(): Setting Local Repo Path")
@@ -1126,8 +1150,10 @@ def main():
 				cLogger.debug("Configuring gitHandle via gitHandle.setXXX(): Setting Repo Sync Label")
 				gitHandle.setRepoSyncLabel(b.getSyncLabel())
 
+				# Spit out extended debug if required
 				if ( cmdOpts.getSpewie() ):
 					gitHandle.testMe()
+
 
 				# $ mkdir /path/to/local/repo
 				# $ pushd /path/to/local/repo
@@ -1161,35 +1187,74 @@ def main():
 
 
 				# $ git checkout remotes/origin/b.getBranch()
-				try:
-					cLogger.debug("Attempting to checkout branch " + str(b.getBranch()))
-					gitHandle.checkoutBranch(b.getBranch())
-				except:
-					cLogger.critical("Failed to checkout branch " + str(b.getBranch()))
-					b.setBuildFailed()
-
-				# This assumes the state of the command-line specified Tag
-				if ( None != b.getSyncLabel() ):
-
-					try:
-						cLogger.debug("Attempting to checkout branch " + str(b.getSyncLabel()))
-						gitHandle.checkoutTag(b.getSyncLabel())
-					except:
-						cLogger.critical("Failed to checkout " + str(b.getSyncLabel()))
-						b.setBuildFailed()
+				#try:
+				#	cLogger.debug("Attempting to checkout branch " + str(b.getBranch()))
+				#	gitHandle.checkoutBranch(b.getBranch())
+				#except:
+				#	cLogger.critical("Failed to checkout branch " + str(b.getBranch()))
+				#	b.setBuildFailed()
 
 
 
+
+				# This checks out the command-line specified Tag
+				#if ( None != b.getSyncLabel() ):
+				#
+				#	try:
+				#		cLogger.debug("Attempting to checkout branch " + str(b.getSyncLabel()))
+				#		gitHandle.checkoutTag(b.getSyncLabel())
+				#	except:
+				#		cLogger.critical("Failed to checkout " + str(b.getSyncLabel()))
+				#		b.setBuildFailed()
+
+
+
+				#Start Breaking up major/minor version
+				strBranch = str(b.getBranch())
 
 				# If git branch isn't in the form of vNUM.NUM -- ie "foo" -- Assume Major and Minor are zero (v0.0)
 				#    (ie Branch is not Constructicon-friendly)
+				if not ( strBranch.startswith("v") ):
+					b.setMajorVersion(0)
+					b.setMinorVersion(0)
+					# Since we've changed version information -- it's a good idea to reset the BSR Output Path
+					BSR.resetOutputPath(b)
+
 				# ... otherwise grab the %Major% and %Minor% from the branch as v(%Major%).(%Minor%)
+				else:
+					# Start carving up the versions
+					branchCutUp = strBranch.split("v")
+					versionSplit = branchCutUp[1]
+					versionSplit = versionSplit.split(".")
+					b.setMajorVersion(versionSplit[0])
+					b.setMinorVersion(versionSplit[1])
+
 
 				# If git branch is "master" -- Assume Major version of 1000 and minor version of 0 (v1000.0)
+				if ( "master" == str.lower(b.getBranch()) ):
+					b.setMajorVersion(1000)
+					b.setMinorVersion(0)
+					# Since we've changed version information -- it's a good idea to reset the BSR Output Path
+					BSR.resetOutputPath(b)
+
+
+
 
 				# Within the project at the source root, find .constructicon.maintenance file...
 				# ... The numeric value in here is %Maint%
 				# ... if .constructicon.maintenance is absent, set %Maint% to 0
+
+				#try:
+				#	cLogger.debug("Attempting to open Maintenance File")
+				#	maintFileHandle = open (BSR.getProjectPath() + os.sep + ".constructicon.maintenance", "r")
+				#	b.setMaintVersion(maintFileHandle.readline())
+				#	maintFileHandle.close()
+				#except:
+				#	cLogger.warning("Failed to open Maintenance File.  Assuming 0 for Maint Version")
+				#	b.setMaintVersion(0)
+
+				# Since we've changed version information -- it's a good idea to reset the BSR Output Path
+				#BSR.resetOutputPath(b)
 
 				# Set Major Minor Maint BuildID
 				# b.setMajorVersion(##MAJOR##)
@@ -1290,17 +1355,64 @@ def main():
 						b.setSyncLabel(str(b.getBranch()) + "-LATEST")
 
 						try:
-							cLogger.debug("Attempting to checkout branch " + str(b.getSyncLabel()))
+							cLogger.debug("Attempting to checkout branch " + str(b.getBranch()) + " at tag " + str(b.getSyncLabel()))
 							gitHandle.checkoutTag(b.getSyncLabel())
 						except:
-							cLogger.critical("Failed to checkout branch " + str(b.getSyncLabel()))
+							cLogger.critical("Failed to checkout branch " + str(b.getBranch()) + " at tag " + str(b.getSyncLabel()))
+							b.setBuildFailed()
+			
+
+
+						# Within the project at the source root, find .constructicon.maintenance file...
+						# ... The numeric value in here is %Maint%
+						# ... if .constructicon.maintenance is absent, set %Maint% to 0
+
+						try:
+							cLogger.debug("Attempting to open Maintenance File")
+							maintFileHandle = open (BSR.getProjectPath() + os.sep + ".constructicon.maintenance", "r")
+							b.setMaintVersion(maintFileHandle.readline())
+							maintFileHandle.close()
+						except:
+							cLogger.warning("Failed to open Maintenance File.  Assuming 0 for Maint Version")
+							b.setMaintVersion(0)
+
+						# Since we've changed version information -- it's a good idea to reset the BSR Output Path
+						BSR.resetOutputPath(b)
+
+					else:
+
+						# $ git checkout remotes/origin/b.getBranch()
+						try:
+							cLogger.debug("Attempting to checkout branch " + str(b.getBranch()) + " at tag " + str(b.getSyncLabel()))
+							gitHandle.checkoutTag(b.getSyncLabel())
+						except:
+							cLogger.critical("Failed to checkout branch " + str(b.getBranch()) + " at tag " + str(b.getSyncLabel()))
 							b.setBuildFailed()
 
-						# Set Major Minor Maint BuildID
-						# b.setMajorVersion(##MAJOR##)
-						# b.setMinorVersion(##MINOR##)
-						# b.setMaintVersion(##MAINT##)
-						# b.setBuildID(##BUIDID##)
+
+						strLabel = str(b.getSyncLabel())
+						
+						if ( strLabel != str(b.getBranch() + "-LATEST") and strLabel.startswith("v") ):
+							try:
+								cLogger.debug("Attempting to carve up label into versions")
+								# Grab Major/Minor/Maint/BuildID from the specified label
+								labelCutUp = strLabel.split("v")
+								versionSplit = labelCutUp[1]
+								versionSplit = versionSplit.split(".")
+								try:
+									b.setBuildID(versionSplit[3])
+								except:
+									b.setBuildID(0)
+								# Since we've changed version information -- it's a good idea to reset the BSR Output Path
+								BSR.resetOutputPath(b)
+							except:
+								cLogger.critical("Failed to split up label into versions")
+								raise
+
+						
+
+						BSR.resetOutputPath(b)
+
 
 				if ( "dev" == str.lower( b.getBuildType() ) ):
 					if ( None == b.getSyncLabel() ):
@@ -1332,6 +1444,14 @@ def main():
 				b.setMinorVersion(0)
 				b.setMaintVersion(0)
 				b.setBuildID(0)
+
+
+			# Make mount points
+			#cLogger.debug("Creating BSR Build System Path : " + str(BSR.getBuildSystemPath()))
+			#os.makedirs(BSR.getBuildSystemPath())
+			cLogger.debug("Creating BSR Output Path       : " + str(BSR.getOutputPath()))
+			os.makedirs(BSR.getOutputPath())
+
 
 
 			cLogger.debug("END -- Verifying Sources, Versions, and Labels...")
