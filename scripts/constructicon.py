@@ -93,6 +93,7 @@ import os
 import platform
 import sys
 import uuid
+import re
 from git import *
 
 class cmdLineOptions:
@@ -477,6 +478,7 @@ class builderObject:
 			self.buildtype = None
 			self.repopath = None
 			self.filepath = None
+			self.tag = None
 			self.synclabel = None
 			self.branch = None
 			self.workspace = None
@@ -509,6 +511,9 @@ class builderObject:
 
 	def getSyncLabel(self):
 		return self.synclabel
+
+	def getTag(self):
+		return self.tag
 
 	def getBranch(self):
 		return self.branch
@@ -551,6 +556,10 @@ class builderObject:
 	def setSyncLabel(self, value):
 		self.msgLogger.debug("Setting synclabel via setSyncLabel() as " + str(value))
 		self.synclabel = value
+	
+	def setTag(self, value):
+		self.msgLogger.debug("Setting Tag via setTag() as " + str(value))
+		self.tag = value
 
 	def setBranch(self, value):
 		self.msgLogger.debug("Setting branch via setBranch() as " + str(value))
@@ -737,6 +746,7 @@ class gitObject:
 		self.repoSyncLabel = None 
 		self.__localRepoHandle = None
 		self.__remoteRepoHandle = None
+		self.tags = None
 
 	def getRemoteRepoPath(self):
 		return self.remoteRepoPath
@@ -766,6 +776,40 @@ class gitObject:
 		self.msgLogger.debug("Setting RemoteRepoPath via setRepoSyncLabel() as " + str(value))
 		self.repoSyncLabel = value
 
+	def setTag(self, value):
+		self.msgLogger.debug("Constructing Tag Command for creating Label " + str(value))
+		tagCommand = []
+		tagCommand.append("-a")
+		tagCommand.append("-m")
+		tagCommand.append(""""Auto-Increment by Constructicon for Official Build.  Building on """ + str(platform.node()) + """\"""")
+		tagCommand.append(str(value))
+
+		self.msgLogger.debug("tagCommand generated as " + str(tagCommand))
+		try:
+			self.msgLogger.debug("Attempting to set tag in Local Repo...")
+			self.__localRepoHandle.git.tag(tagCommand)
+		except:
+			self.msgLogger.error("Failed to set tag in Local Repo")
+			raise
+
+
+	def setTagReuse(self, value, commitish):
+		self.msgLogger.debug("Constructing Tag Command for creating Label " + str(value) + " with commitish of " + str(commitish))
+		tagCommand = []
+		tagCommand.append("-a")
+		tagCommand.append("-m")
+		tagCommand.append(""""Auto-Increment by Constructicon for Official Build.  Building on """ + str(platform.node()) + """\"""")
+		tagCommand.append(str(value))
+		tagCommand.append(str(commitish))
+
+		self.msgLogger.debug("tagCommand generated as " + str(tagCommand))
+		try:
+			self.msgLogger.debug("Attempting to set tag in Local Repo...")
+			self.__localRepoHandle.git.tag(tagCommand)
+		except:
+			self.msgLogger.error("Failed to set tag in Local Repo")
+			raise
+
 	def initRepo(self):
 		try:
 			self.msgLogger.debug("Initializing Local RepoPath via initRepo() as " + str(self.localRepoPath))
@@ -790,6 +834,14 @@ class gitObject:
 			self.msgLogger.error("Failed to execute GIT FETCH on remote repo via remoteFetch()")
 			raise
 
+	def remotePush(self):
+		try:
+			self.msgLogger.debug("Pushing Tags back to Remote Repo")
+			self.__localRepoHandle.git.push("--tags")
+		except:
+			self.msgLogger.error("Failed to push tags back to remote repo")
+			raise
+
 	def checkoutBranch(self, branchname):
 		try:
 			# byHand.git.checkout('remotes/origin/v2.0')
@@ -808,6 +860,17 @@ class gitObject:
 		except:
 			self.msgLogger.error("Failed to check out branch " + tag)
 			raise
+
+	def getTags(self, *Pattern):
+		if ( None == Pattern):
+			Pattern = self.repoBranch + "*"
+		try:
+			self.msgLogger.debug("Generating list of tags for " + str(Pattern))
+			self.tags = self.__localRepoHandle.git.tag("-l", Pattern)
+		except:
+			self.msgLogger.error("Failed to retreive tags")
+			raise
+		return self.tags
 
 	def testMe(self):
 		print "******************************************************************************"
@@ -938,7 +1001,7 @@ def main():
 		cLogger.debug("Setting LocalRepoPath")
 		selfsyncGIT.setLocalRepoPath(selfsyncBSR.getBuildSystemPath())
 		cLogger.debug("Setting RepoBranch")
-		selfsyncGIT.setRepoBranch("master")
+		selfsyncGIT.setRepoBranch("v1.0")
 
 		try:
 			cLogger.debug("selfsyncGIT Init Local Repo")
@@ -960,7 +1023,7 @@ def main():
 
 		try:
 			cLogger.debug("selfsyncGIT checkout master")
-			selfsyncGIT.checkoutBranch("master")
+			selfsyncGIT.checkoutTag("v1.0-LATEST")
 		except:
 			exit(1)
 
@@ -1214,7 +1277,8 @@ def main():
 
 				# If git branch isn't in the form of vNUM.NUM -- ie "foo" -- Assume Major and Minor are zero (v0.0)
 				#    (ie Branch is not Constructicon-friendly)
-				if not ( strBranch.startswith("v") ):
+				if not ( re.match("v\d+\.\d+", b.getBranch()) ):
+					unFriendlyBranch = True
 					b.setMajorVersion(0)
 					b.setMinorVersion(0)
 					# Since we've changed version information -- it's a good idea to reset the BSR Output Path
@@ -1222,6 +1286,7 @@ def main():
 
 				# ... otherwise grab the %Major% and %Minor% from the branch as v(%Major%).(%Minor%)
 				else:
+					unFriendlyBranch = False
 					# Start carving up the versions
 					branchCutUp = strBranch.split("v")
 					versionSplit = branchCutUp[1]
@@ -1232,6 +1297,7 @@ def main():
 
 				# If git branch is "master" -- Assume Major version of 1000 and minor version of 0 (v1000.0)
 				if ( "master" == str.lower(b.getBranch()) ):
+					unFriendlyBranch = False
 					b.setMajorVersion(1000)
 					b.setMinorVersion(0)
 					# Since we've changed version information -- it's a good idea to reset the BSR Output Path
@@ -1247,7 +1313,7 @@ def main():
 				#try:
 				#	cLogger.debug("Attempting to open Maintenance File")
 				#	maintFileHandle = open (BSR.getProjectPath() + os.sep + ".constructicon.maintenance", "r")
-				#	b.setMaintVersion(maintFileHandle.readline())
+				#	b.setMaintVersion(str.rstrip(maintFileHandle.readline()))
 				#	maintFileHandle.close()
 				#except:
 				#	cLogger.warning("Failed to open Maintenance File.  Assuming 0 for Maint Version")
@@ -1264,24 +1330,102 @@ def main():
 
 
 				if ( "official" == str.lower( b.getBuildType() ) ):
+					# Check the branch out at HEAD
+					try:
+						cLogger.debug("Attempting to checkout branch " + str(b.getBranch()) + " at HEAD")
+						gitHandle.checkoutBranch(b.getBranch())
+					except:
+						cLogger.critical("Failed to checkout branch " + str(b.getBranch()) + " at HEAD")
+						b.setBuildFailed()
+						raise
 
-					# Construct the tag pattern as %BRANCH%-v0.0.%Maint% for non-friendly branches
 
-					# Construct the tag pattern as v1000.0.%Maint% for master
+					# Within the project at the source root, find .constructicon.maintenance file...
+					# ... The numeric value in here is %Maint%
+					# ... if .constructicon.maintenance is absent, set %Maint% to 0
 
-					# Construct the tag pattern as v%major%.%Minor%.%Maint% for friendly branches.... Let's assume v1.3
+					try:
+						cLogger.debug("Attempting to open Maintenance File")
+						maintFileHandle = open (BSR.getProjectPath() + os.sep + ".constructicon.maintenance", "r")
+						b.setMaintVersion(str.rstrip(maintFileHandle.readline()))
+						maintFileHandle.close()
+					except:
+						cLogger.warning("Failed to open Maintenance File.  Assuming 0 for Maint Version")
+						b.setMaintVersion(0)
 
 					# If BuildType is Official.... Ascertain versions already built and Inc Ver
+					
+					# $ git tag -l <tag pattern>*
+					cLogger.debug("Retrieving list of Tags")
+					if ( True == unFriendlyBranch ):
+						tags = gitHandle.getTags(str(b.getBranch()) + "-v" + str(b.getMajorVersion()) + "." + str(b.getMinorVersion()) + "." + str(b.getMaintVersion()) + "*")
+					else:
+						tags = gitHandle.getTags("v" + str(b.getMajorVersion()) + "." + str(b.getMinorVersion()) + "." + str(b.getMaintVersion()) + "*")
+
+					# ... step through it
+					try:
+						cLogger.debug("Creating List of Tags")
+						tagsList = tags.split('\n')
+						BuildIDs = []
+
+						cLogger.debug("Capturing BuildID from Tag")
+						for tag in tagsList:
+							if ( None == tag or "" == tag):
+								cLogger.debug("No entries found in tagsList")
+								noTagsFound = True
+								cLogger.debug("Setting BuildID to 1")
+								b.setBuildID(str(1))
+							else:
+								cLogger.debug("Found Entry in tagsList... Carving...")
+								noTagsFound = False
+								# Start carving up the versions
+								if ( True == unFriendlyBranch ):
+									tagsBranchCutUp = tag.split("-v")
+								else:
+									tagsBranchCutUp = tag.split("v")
+								tagsSplit = tagsBranchCutUp[1]
+								tagsSplit = tagsSplit.split(".")
+								BuildIDs.append(tagsSplit[3])
+
+						if ( True != noTagsFound ):
+							cLogger.debug("Numerically sorting list of BuildIDs")
+							BuildIDs.sort(lambda a,b: cmp(int(a), int(b)))
+							BuildIDs.reverse()
+
+							cLogger.debug("Found Last BuildID as " + BuildIDs[0])
+
+							cLogger.debug("Setting new BuildID")
+							b.setBuildID( str(int(BuildIDs[0]) + 1) )
+
+					except:
+						cLogger.critical("Failed to set BuildID")
+						b.setBuildFailed()
+
+
+					BSR.resetOutputPath(b)
+
+					cLogger.debug("New BuildID is " + str(b.getBuildID()))
+
+					# Construct the tag pattern as %BRANCH%-v0.0.%Maint% for non-friendly branches
+					# Construct the tag pattern as v1000.0.%Maint% for master
+					# Construct the tag pattern as v%major%.%Minor%.%Maint% for friendly branches.... Let's assume v1.3
+
+					if ( True == unFriendlyBranch ):
+						b.setTag(str(b.getBranch()) + "-v" + str(b.getMajorVersion()) + "." + str(b.getMinorVersion()) + "." + str(b.getMaintVersion()) + "." + str(b.getBuildID()))
+					else:
+						b.setTag("v" + str(b.getMajorVersion()) + "." + str(b.getMinorVersion()) + "." + str(b.getMaintVersion()) + "." + str(b.getBuildID()))
+						
+
 
 					# If BuildType is Official.... push new Inc Version back into source control
+
+
+					
 
 					# If BuildType is Official.... Create Sync State Label using Inc Ver at HEAD
 					# b.setSyncLabel(##NEW SYNC LABEL##)
 
-					# If BuildType is Official.... Ascertain versions already built and Inc Ver
 
-					# $ git tag -l <tag pattern>*
-					# ... step through it
 
 					# Resulting Tags should be v1000.0.x.N for Master
 					#                    %BRANCH%-v0.0.x.N for non-friendly
@@ -1305,6 +1449,13 @@ def main():
 					# If SyncLabel is NOT specified....
 					if ( None == b.getSyncLabel() ):
 
+						gitHandle.setTag(b.getTag())
+						gitHandle.remotePush()
+						gitHandle.remoteFetch()
+
+						gitHandle.checkoutTag(b.getTag())
+						
+
 						# tagname = v%Major%.%Minor%.%Maint%.%BuildID% or whatever above (friendly vs unfriendly)
 						# $ git tag -a -m "AutoIncrement Blah Blah Blah" <tagname> (AT HEAD)
 
@@ -1313,9 +1464,6 @@ def main():
 						# $ git push origin --tags
 
 						# b.setSyncLabel(<tagname>)
-
-						cLogger.critical("METHOD NOT IMPLEMENTED")
-						b.setBuildFailed()
 
 					# If SyncLabel IS specified....
 					if ( None != b.getSyncLabel() ):
@@ -1327,19 +1475,20 @@ def main():
 							exit(1)
 						else:
 							cLogger.warning("You are generating a new official build in the same state as a previous label: " + str(b.getSyncLabel()))
-							# If BuildType is Official.... push new Inc Version back into source control
 
 							# tagname = v%Major%.%Minor%.%Maint%.%BuildID% or whatever above (friendly vs unfriendly)
 							# $ git tag -a -m "AutoIncrement Blah Blah Blah" <tagname> <b.getSyncLabel()>
+							gitHandle.setTagReuse(b.getTag(), b.getSyncLabel())
 
-
+							# If BuildType is Official.... push new Inc Version back into source control
 							# $ git push origin --tags
+							gitHandle.remotePush()
+							gitHandle.remoteFetch()
+
+							gitHandle.checkoutTag(b.getTag())
 
 							# b.setSyncLabel(<tagname>)
 							# note that ##NEW SYNC LABEL## is actually a copy o
-
-							cLogger.critical("METHOD NOT IMPLEMENTED")
-							b.setBuildFailed()
 
 				if ( "local" == str.lower( b.getBuildType() ) ):
 
@@ -1360,6 +1509,7 @@ def main():
 						except:
 							cLogger.critical("Failed to checkout branch " + str(b.getBranch()) + " at tag " + str(b.getSyncLabel()))
 							b.setBuildFailed()
+							raise
 			
 
 
@@ -1370,12 +1520,14 @@ def main():
 						try:
 							cLogger.debug("Attempting to open Maintenance File")
 							maintFileHandle = open (BSR.getProjectPath() + os.sep + ".constructicon.maintenance", "r")
-							b.setMaintVersion(maintFileHandle.readline())
+							b.setMaintVersion(str.rstrip(maintFileHandle.readline()))
 							maintFileHandle.close()
 						except:
 							cLogger.warning("Failed to open Maintenance File.  Assuming 0 for Maint Version")
 							b.setMaintVersion(0)
 
+
+						b.setBuildID(0)
 						# Since we've changed version information -- it's a good idea to reset the BSR Output Path
 						BSR.resetOutputPath(b)
 
@@ -1388,11 +1540,12 @@ def main():
 						except:
 							cLogger.critical("Failed to checkout branch " + str(b.getBranch()) + " at tag " + str(b.getSyncLabel()))
 							b.setBuildFailed()
+							raise
 
 
 						strLabel = str(b.getSyncLabel())
 						
-						if ( strLabel != str(b.getBranch() + "-LATEST") and strLabel.startswith("v") ):
+						if ( strLabel != str(b.getBranch() + "-LATEST") and re.match("v\d+\.\d+", b.getBranch()) ):
 							try:
 								cLogger.debug("Attempting to carve up label into versions")
 								# Grab Major/Minor/Maint/BuildID from the specified label
@@ -1409,33 +1562,57 @@ def main():
 								cLogger.critical("Failed to split up label into versions")
 								raise
 
-						
+						# Within the project at the source root, find .constructicon.maintenance file...
+						# ... The numeric value in here is %Maint%
+						# ... if .constructicon.maintenance is absent, set %Maint% to 0
+
+						try:
+							cLogger.debug("Attempting to open Maintenance File")
+							maintFileHandle = open (BSR.getProjectPath() + os.sep + ".constructicon.maintenance", "r")
+							b.setMaintVersion(str.rstrip(maintFileHandle.readline()))
+							maintFileHandle.close()
+						except:
+							cLogger.warning("Failed to open Maintenance File.  Assuming 0 for Maint Version")
+							b.setMaintVersion(0)
+
 
 						BSR.resetOutputPath(b)
 
 
 				if ( "dev" == str.lower( b.getBuildType() ) ):
 					if ( None == b.getSyncLabel() ):
-						# Get SHA of HEAD
-						# b.setSyncLabel(##HEAD SHA###)
 
-						# Set Major Minor Maint BuildID
-						# b.setMajorVersion(##MAJOR##)
-						# b.setMinorVersion(##MINOR##)
-						# b.setMaintVersion(##MAINT##)
-						# b.setBuildID(##BUIDID##)
-						cLogger.critical("METHOD NOT IMPLEMENTED")
-						b.setBuildFailed()
+						# $ git checkout remotes/origin/b.getBranch()
+						try:
+							cLogger.debug("Attempting to checkout branch " + str(b.getBranch()) + " at HEAD")
+							gitHandle.checkoutTag(b.getBranch())
+						except:
+							cLogger.critical("Failed to checkout branch " + str(b.getBranch()) + " at HEAD")
+							b.setBuildFailed()
+							raise
+
+					else:
+						# $ git checkout remotes/origin/b.getBranch()
+						try:
+							cLogger.debug("Attempting to checkout branch " + str(b.getBranch()) + " at tag " + str(b.getSyncLabel()))
+							gitHandle.checkoutTag(b.getSyncLabel())
+						except:
+							cLogger.critical("Failed to checkout branch " + str(b.getBranch()) + " at tag " + str(b.getSyncLabel()))
+							b.setBuildFailed()
+							raise
 
 
-				# Set SyncLabel to defined above labels either found or generated...
-				# ....by the time we're here --  b.getSyncLabel() should just return what we need
+					# Get SHA of HEAD
+					# b.setSyncLabel(##HEAD SHA###)
 
-				# Verify SyncLabel specified is in source control and exists
+					# Set Major Minor Maint BuildID
+					b.setMajorVersion(0)
+					b.setMinorVersion(0)
+					b.setMaintVersion(0)
+					b.setBuildID(0)
 
-				# If SyncLabel IS Specified.... Use SyncLabel if verified exists
-				
-				# If BuildType is Local or Official.... Sync BSR to Branch/Version Label
+					BSR.resetOutputPath(b)
+
 			else:
 				# If BuildType is Dev and FILEPATH.... Skip SyncState (this allows building with rogue code)
 				
@@ -1455,23 +1632,6 @@ def main():
 
 
 			cLogger.debug("END -- Verifying Sources, Versions, and Labels...")
-
-
-		# ----------------------------------------------------------------------
-		# Sync the Code (Obsolete -- checkout is performed above)
-		# ----------------------------------------------------------------------
-
-		#if not (b.getBuildFailed()):
-
-		#	cLogger.debug("START -- Pulling in Project sources")
-
-		#	if ( None != b.getRepoPath() and True != b.getBuildFailed() ):
-		#		### Pull in Source
-		#		cLogger.critical("NOT IMPLEMENTED: Sync the Code")
-		#		b.setBuildFailed()
-
-
-		#	cLogger.debug("END -- Pulling in Project sources")
 
 
 		# ----------------------------------------------------------------------
@@ -1500,6 +1660,7 @@ def main():
 			print "    RepoPath            : " + str(b.getRepoPath())
 			print "    FilePath            : " + str(b.getFilePath())
 			print "    SyncLabel           : " + str(b.getSyncLabel())
+			print "    Git Tag             : " + str(b.getTag())
 			print "    Branch              : " + str(b.getBranch())
 			print "    Workspace           : " + str(b.getWorkspace())
 			print "    PublishPath         : " + str(b.getPublishPath())
