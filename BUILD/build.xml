@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<project name="Constructicon" basedir=".." default="compile.dist">
+	<!-- 
+	Build System Setup:
+
+	We're assuming the environment variable BSLandingZone is present.
+	This represents the location on disk that we'll be pushing compile
+	output bits to... and building our package structures into.
+
+	The following variables are of interest...
+
+	**** $(BSLandingZone) 	>>>> ${output.root} (sorta)
+	**** ${basedir} 	>>>> ${proj.root}
+
+	${output.root}		=	Where Compile Output goes
+	${logging.root}		=	Where the Log Output goes
+	${proj.root}		=	Base directory of Sources
+	${src.root}		=	Where .m, .h, and .pch should be
+	${nib.root}		=	Where .xib and .nib files should exist
+					in a localized state (IE English.lproj)
+	${BuildSystem.root}	=	Location for shared BuildSystem files
+					as expected to be.
+
+	This is a sub-project XML file.  It wil receive all of the above
+	variables through inheritence.
+
+	-->
+
+	<target name="compile.debug">
+		<!-- <property name="obj.root.debug" value="${obj.root}/debug" />
+		<mkdir dir="${obj.root.debug}/constructicon" /> -->
+		<!-- Debug Compile Shiz -->
+		<echo message="Debug Constructicon Build Not Implemented" />
+	</target>
+
+
+
+	<target name="compile.dist">
+		<!-- <property name="obj.root.dist" value="${obj.root}/dist" />
+		<mkdir dir="${obj.root.dist}/HelloWorld" /> -->
+		<!-- Dist/Retail Compile Shiz -->
+
+		<echo message="Dist Constructicon Build Not Implemented" />
+	</target>
+	</target>
+
+</project>
