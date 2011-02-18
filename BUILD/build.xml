@@ -27,7 +27,7 @@
 	-->
 
 	<target name="compile.debug">
-		<copy todir="${output.root}">
+		<copy todir="${output.root}/DEBUG">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />
 				<exclude name=".git" />
@@ -40,7 +40,7 @@
 
 
 	<target name="compile.dist">
-		<copy todir="${output.root}">
+		<copy todir="${output.root}/DIST">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />
 				<exclude name=".git" />
