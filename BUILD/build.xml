@@ -30,12 +30,12 @@
 		<echo message="Setting DEBUG Obj Root" />
 		<property name="obj.root.debug" value="${obj.root}/debug" />
 		<echo message="Staging Debug DMG Template" />
-		<copy file="${proj.root}/BUILD/mac.DMG/Constructicon.Template.dmg.sparseimage" tofile="${obj.root}/Constructicon.debug.dmg.sparsefile" />
+		<copy file="${proj.root}/BUILD/mac.DMG/Constructicon.Template.dmg.sparseimage" tofile="${obj.root}/Constructicon.debug.dmg.sparseimage" />
 		<echo message="Making DEBUGDMG Mountpoint" />
 		<mkdir dir="${obj.root}/DEBUGDMG" />
 		<exec executable="hdiutil">
 			<arg value="attach" />
-			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
+			<arg value="${obj.root}/Constructicon.debug.dmg.sparseimage" />
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DEBUGDMG" />
 			<arg value="-nobrowse" />
@@ -60,7 +60,7 @@
 		</exec>
 		<exec executable="hdiutil">
 			<arg value="convert" />
-			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
+			<arg value="${obj.root}/Constructicon.debug.dmg.sparseimage" />
 			<arg value="-format" />
 			<arg value="UDRO" />
 			<arg value="-o" />
@@ -79,11 +79,11 @@
 
 	<target name="package.dist">
 		<property name="obj.root.dist" value="${obj.root}/dist" />
-		<copy file="${proj.root}/BUILD/mac.DMG/Constructicon.Template.dmg.sparseimage" tofile="${obj.root}/Constructicon.dmg.sparsefile" />
+		<copy file="${proj.root}/BUILD/mac.DMG/Constructicon.Template.dmg.sparseimage" tofile="${obj.root}/Constructicon.dmg.sparseimage" />
 		<mkdir dir="${obj.root}/DISTDMG" />
 		<exec executable="hdiutil">
 			<arg value="attach" />
-			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
+			<arg value="${obj.root}/Constructicon.dmg.sparseimage" />
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DISTDMG" />
 			<arg value="-nobrowse" />
@@ -108,7 +108,7 @@
 		</exec>
 		<exec executable="hdiutil">
 			<arg value="convert" />
-			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
+			<arg value="${obj.root}/Constructicon.dmg.sparseimage" />
 			<arg value="-format" />
 			<arg value="UDRO" />
 			<arg value="-o" />
