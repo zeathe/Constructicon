@@ -43,6 +43,7 @@
 		<exec executable="hdiutil">
 			<arg value="attach" />
 			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
+			<arg value="-readwrite" />
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DEBUGDMG" />
 		</exec>
@@ -98,6 +99,7 @@
 		<exec executable="hdiutil">
 			<arg value="attach" />
 			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
+			<arg value="-readwrite" />
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DISTDMG" />
 		</exec>
