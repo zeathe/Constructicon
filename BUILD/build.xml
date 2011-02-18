@@ -32,7 +32,7 @@
 		<echo message="Staging Debug DMG Template" />
 		<copy file="${proj.root}/BUILD/mac.DMG/Constructicon.Template.dmg.sparseimage" tofile="${obj.root}/Constructicon.debug.dmg.sparsefile" />
 		<echo message="Making DEBUGDMG Mountpoint" />
-		<Mkdir dir="${obj.root}/DEBUGDMG" />
+		<mkdir dir="${obj.root}/DEBUGDMG" />
 		<echo message="Resizing DEBUG Template" />
 		<exec executable="hdiutil">
 			<arg value="resize" />
@@ -85,7 +85,7 @@
 	<target name="package.dist">
 		<property name="obj.root.dist" value="${obj.root}/dist" />
 		<copy file="${proj.root}/BUILD/mac.DMG/Constructicon.Template.dmg.sparseimage" tofile="${obj.root}/Constructicon.dmg.sparsefile" />
-		<Mkdir dir="${obj.root}/DISTDMG" />
+		<mkdir dir="${obj.root}/DISTDMG" />
 		<exec executable="hdiutil">
 			<arg value="resize" />
 			<arg value="-size" />
