@@ -30,7 +30,7 @@
 		<copy todir="${output.root}/DEBUG">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />
-				<exclude name=".git" />
+				<exclude name=".git/**" />
 				<exclude name=".gitignore" />
 				<exclude name=".constructicon.maintenance" />
 			</fileset>
@@ -43,7 +43,7 @@
 		<copy todir="${output.root}/DIST">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />
-				<exclude name=".git" />
+				<exclude name=".git/**" />
 				<exclude name=".gitignore" />
 				<exclude name=".constructicon.maintenance" />
 			</fileset>
