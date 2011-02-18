@@ -33,25 +33,13 @@
 		<copy file="${proj.root}/BUILD/mac.DMG/Constructicon.Template.dmg.sparseimage" tofile="${obj.root}/Constructicon.debug.dmg.sparsefile" />
 		<echo message="Making DEBUGDMG Mountpoint" />
 		<mkdir dir="${obj.root}/DEBUGDMG" />
-		<echo message="Resizing DEBUG Template" />
-		<exec executable="chown">
-			<arg value=":staff" />
-			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
-		</exec>
-		<exec executable="hdiutil">
-			<arg value="resize" />
-			<arg value="-size" />
-			<arg value="600M" />
-			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
-		</exec>
 		<exec executable="hdiutil">
 			<arg value="attach" />
 			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DEBUGDMG" />
 			<arg value="-nobrowse" />
-			<arg value="-owners" />
-			<arg value="on" />
+			<arg value="-shadow" />
 		</exec>
 		<waitfor maxwait="30" maxwaitunit="second">
 			<available file="${obj.root}/DEBUGDMG" />
@@ -85,6 +73,7 @@
 			<arg value="UDBZ" />
 			<arg value="-o" />
 			<arg value="${output.root}/Constructicon.debug.dmg" />
+			<arg value="-shadow" />
 		</exec>
 	</target>
 
@@ -96,24 +85,13 @@
 		<property name="obj.root.dist" value="${obj.root}/dist" />
 		<copy file="${proj.root}/BUILD/mac.DMG/Constructicon.Template.dmg.sparseimage" tofile="${obj.root}/Constructicon.dmg.sparsefile" />
 		<mkdir dir="${obj.root}/DISTDMG" />
-		<exec executable="chown">
-			<arg value=":staff" />
-			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
-		</exec>
-		<exec executable="hdiutil">
-			<arg value="resize" />
-			<arg value="-size" />
-			<arg value="600M" />
-			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
-		</exec> 
 		<exec executable="hdiutil">
 			<arg value="attach" />
 			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DISTDMG" />
 			<arg value="-nobrowse" />
-			<arg value="-owners" />
-			<arg value="on" />
+			<arg value="-shadow" />
 		</exec>
 		<waitfor maxwait="30" maxwaitunit="second">
 			<available file="${obj.root}/DISTDMG" />
@@ -147,6 +125,7 @@
 			<arg value="UDBZ" />
 			<arg value="-o" />
 			<arg value="${output.root}/Constructicon.dmg" />
+			<arg value="-shadow" />
 		</exec>
 	</target>
 
