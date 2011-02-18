@@ -26,7 +26,7 @@
 
 	-->
 
-	<target name="compile.debug" output="${logging.root}/compile.debug.log.txt">
+	<target name="compile.debug">
 		<copy todir="${output.root}">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />
@@ -39,7 +39,7 @@
 
 
 
-	<target name="compile.dist" output="${logging.root}/compile.dist.log.txt">
+	<target name="compile.dist">
 		<copy todir="${output.root}">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />

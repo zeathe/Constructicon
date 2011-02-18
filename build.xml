@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
-<project name="HelloWorld" basedir="." default="default">
+<project name="ConstructiconBuildRoot" basedir="." default="default">
 	<!-- 
 	Build System Setup:
 
