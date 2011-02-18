@@ -26,8 +26,23 @@
 
 	-->
 
-	<target name="compile.debug">
-		<copy todir="${output.root}/DEBUG">
+	<target name="package.debug">
+		<property name="obj.root.debug" value="${obj.root}/debug" />
+		<copy file="${proj.root}/BUILD/mac.DMG/Constructicon.Template.dmg.sparseimage" tofile="${obj.root}/Constructicon.debug.dmg.sparsefile" />
+		<makedir dir="${obj.root}/DEBUGDMG" />
+		<exec executable="hdiutil">
+			<arg value="resize" />
+			<arg value="-size" />
+			<arg value="200M" />
+			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="attach" />
+			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
+			<arg value="-mountpoint" />
+			<arg value="${obj.root}/DEBUGDMG" />
+		</exec>
+		<copy todir="${obj.root}/DEBUGDMG/Constructicon">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />
 				<exclude name=".git/**" />
@@ -36,12 +51,50 @@
 				<exclude name=".constructicon.maintenance" />
 			</fileset>
 		</copy>
+		<exec executable="diskutil">
+			<arg value="renameVolume" />
+			<arg value="${obj.root}/DEBUGDMG" />
+			<arg value="Constructicon v${env.constructicon.majorversion}.${env.constructicon.minorversion}.${env.constructicon.maintenanceversion}.${env.constructicon.buildid} DEBUG" />
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="eject" />
+			<arg value="${obj.root}/DEBUGDMG" />
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="compact" />
+			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="convert" />
+			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
+			<arg value="-format" />
+			<arg value="UDBZ" />
+			<arg value="-o" />
+			<arg value="${output.root}/Constructicon.debug.dmg" />
+		</exec>
 	</target>
 
+	<target name="compile.debug">
+		<antcall target="package.debug" />
+	</target>
 
-
-	<target name="compile.dist">
-		<copy todir="${output.root}/DIST">
+	<target name="package.dist">
+		<property name="obj.root.dist" value="${obj.root}/dist" />
+		<copy file="${proj.root}/BUILD/mac.DMG/Constructicon.Template.dmg.sparseimage" tofile="${obj.root}/Constructicon.dmg.sparsefile" />
+		<makedir dir="${obj.root}/DISTDMG" />
+		<exec executable="hdiutil">
+			<arg value="resize" />
+			<arg value="-size" />
+			<arg value="200M" />
+			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="attach" />
+			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
+			<arg value="-mountpoint" />
+			<arg value="${obj.root}/DISTDMG" />
+		</exec>
+		<copy todir="${output.root}/DISTDMG/Constructicon">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />
 				<exclude name=".git/**" />
@@ -50,6 +103,31 @@
 				<exclude name=".constructicon.maintenance" />
 			</fileset>
 		</copy>
+		<exec executable="diskutil">
+			<arg value="renameVolume" />
+			<arg value="${obj.root}/DISTDMG" />
+			<arg value='"Constructicon v${env.constructicon.majorversion}.${env.constructicon.minorversion}.${env.constructicon.maintenanceversion}.${env.constructicon.buildid}"' />
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="eject" />
+			<arg value="${obj.root}/DISTDMG" />
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="compact" />
+			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="convert" />
+			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
+			<arg value="-format" />
+			<arg value="UDBZ" />
+			<arg value="-o" />
+			<arg value="${output.root}/Constructicon.dmg" />
+		</exec>
+	</target>
+
+	<target name="compile.dist">
+		<antcall target="package.dist" />
 	</target>
 
 </project>
