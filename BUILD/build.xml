@@ -63,14 +63,10 @@
 			<arg value="${obj.root}/DEBUGDMG" />
 		</exec>
 		<exec executable="hdiutil">
-			<arg value="compact" />
-			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
-		</exec>
-		<exec executable="hdiutil">
 			<arg value="convert" />
 			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
 			<arg value="-format" />
-			<arg value="UDBZ" />
+			<arg value="UDRO" />
 			<arg value="-o" />
 			<arg value="${output.root}/Constructicon.debug.dmg" />
 			<arg value="-shadow" />
@@ -96,7 +92,7 @@
 		<waitfor maxwait="30" maxwaitunit="second">
 			<available file="${obj.root}/DISTDMG" />
 		</waitfor>
-		<copy todir="${output.root}/DISTDMG/Constructicon">
+		<copy todir="${obj.root}/DISTDMG/Constructicon">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />
 				<exclude name=".git/**" />
@@ -115,14 +111,10 @@
 			<arg value="${obj.root}/DISTDMG" />
 		</exec>
 		<exec executable="hdiutil">
-			<arg value="compact" />
-			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
-		</exec>
-		<exec executable="hdiutil">
 			<arg value="convert" />
 			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
 			<arg value="-format" />
-			<arg value="UDBZ" />
+			<arg value="UDRO" />
 			<arg value="-o" />
 			<arg value="${output.root}/Constructicon.dmg" />
 			<arg value="-shadow" />
