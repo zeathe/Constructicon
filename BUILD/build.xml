@@ -46,6 +46,9 @@
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DEBUGDMG" />
 		</exec>
+		<waitfor maxwait="30" maxwaitunit="seconds">
+			<available file="${obj.root}/DEBUGDMG" />
+		</waitfor>
 		<copy todir="${obj.root}/DEBUGDMG/Constructicon">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />
@@ -98,6 +101,9 @@
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DISTDMG" />
 		</exec>
+		<waitfor maxwait="30" maxwaitunit="seconds">
+			<available file="${obj.root}/DISTDMG" />
+		</waitfor>
 		<copy todir="${output.root}/DISTDMG/Constructicon">
 			<fileset dir="${proj.root}">
 				<exclude name="BUILD/**" />
