@@ -26,21 +26,28 @@
 
 	-->
 
-	<target name="compile.debug">
-		<!-- <property name="obj.root.debug" value="${obj.root}/debug" />
-		<mkdir dir="${obj.root.debug}/constructicon" /> -->
-		<!-- Debug Compile Shiz -->
-		<echo message="Debug Constructicon Build Not Implemented" />
+	<target name="compile.debug" output="${logging.root}/compile.debug.log.txt">
+		<copy todir="${output.root}">
+			<fileset dir="${proj.root}">
+				<exclude name="BUILD/**" />
+				<exclude name=".git" />
+				<exclude name=".gitignore" />
+				<exclude name=".constructicon.maintenance" />
+			</fileset>
+		</copy>
 	</target>
 
 
 
-	<target name="compile.dist">
-		<!-- <property name="obj.root.dist" value="${obj.root}/dist" />
-		<mkdir dir="${obj.root.dist}/HelloWorld" /> -->
-		<!-- Dist/Retail Compile Shiz -->
-
-		<echo message="Dist Constructicon Build Not Implemented" />
+	<target name="compile.dist" output="${logging.root}/compile.dist.log.txt">
+		<copy todir="${output.root}">
+			<fileset dir="${proj.root}">
+				<exclude name="BUILD/**" />
+				<exclude name=".git" />
+				<exclude name=".gitignore" />
+				<exclude name=".constructicon.maintenance" />
+			</fileset>
+		</copy>
 	</target>
 
 </project>
