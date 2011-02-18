@@ -50,6 +50,8 @@
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DEBUGDMG" />
 			<arg value="-nobrowse" />
+			<arg value="-owners" />
+			<arg value="on" />
 		</exec>
 		<waitfor maxwait="30" maxwaitunit="second">
 			<available file="${obj.root}/DEBUGDMG" />
@@ -110,6 +112,8 @@
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DISTDMG" />
 			<arg value="-nobrowse" />
+			<arg value="-owners" />
+			<arg value="on" />
 		</exec>
 		<waitfor maxwait="30" maxwaitunit="second">
 			<available file="${obj.root}/DISTDMG" />
