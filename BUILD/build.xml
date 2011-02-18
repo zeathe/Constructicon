@@ -41,15 +41,15 @@
 		<exec executable="hdiutil">
 			<arg value="resize" />
 			<arg value="-size" />
-			<arg value="200M" />
+			<arg value="600M" />
 			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
 		</exec>
 		<exec executable="hdiutil">
 			<arg value="attach" />
 			<arg value="${obj.root}/Constructicon.debug.dmg.sparsefile" />
-			<arg value="-shadow" />
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DEBUGDMG" />
+			<arg value="-nobrowse" />
 		</exec>
 		<waitfor maxwait="30" maxwaitunit="second">
 			<available file="${obj.root}/DEBUGDMG" />
@@ -107,9 +107,9 @@
 		<exec executable="hdiutil">
 			<arg value="attach" />
 			<arg value="${obj.root}/Constructicon.dmg.sparsefile" />
-			<arg value="-shadow" />
 			<arg value="-mountpoint" />
 			<arg value="${obj.root}/DISTDMG" />
+			<arg value="-nobrowse" />
 		</exec>
 		<waitfor maxwait="30" maxwaitunit="second">
 			<available file="${obj.root}/DISTDMG" />
