@@ -1788,8 +1788,13 @@ def main():
 
 				cLogger.debug("Adding RepoPath to Path...")
 				zePublishPath += os.sep + b.getRepoPath()
-				cLogger.debug("Adding Branch Name to Path...")
-				zePublishPath += os.sep + b.getBranch()
+
+				# Branch makes the directory structure a little redundant
+				
+				#cLogger.debug("Adding Branch Name to Path...")
+				#zePublishPath += os.sep + b.getBranch()
+
+
 				cLogger.debug("Adding SyncLabel to Path...")
 				zePublishPath += os.sep + b.getSyncLabel()
 
