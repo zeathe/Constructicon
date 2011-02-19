@@ -71,8 +71,31 @@
 		</exec>
 	</target>
 
+	<target name="filecopy.debug">
+		<copy todir="${output.root}/DEBUG">
+			<fileset dir="${proj.root}">
+				<exclude name="BUILD/**" />
+				<exclude name=".git/**" />
+				<exclude name=".gitignore" />
+				<exclude name="build.xml" />
+				<exclude name=".constructicon.maintenance" />
+			</fileset>
+		</copy>
+	</target>
+
+
 	<target name="compile.debug">
+		<!-- Disabled
+
+		I have yet to figure out why the physical steps
+		required in the HDIUTIL execution work fine on 
+		the command prompt in Terminal, yet Java, ANT,
+		Python, or something else in between is futzing
+		permissions and forcing the sparse image to only
+		mount read-only
 		<antcall target="package.debug" />
+		-->
+		<antcall target="filecopy.debug" />
 	</target>
 
 	<target name="package.dist">
@@ -117,8 +140,31 @@
 		</exec>
 	</target>
 
+	<target name="filecopy.dist">
+		<copy todir="${output.root}/DIST">
+			<fileset dir="${proj.root}">
+				<exclude name="BUILD/**" />
+				<exclude name=".git/**" />
+				<exclude name=".gitignore" />
+				<exclude name="build.xml" />
+				<exclude name=".constructicon.maintenance" />
+			</fileset>
+		</copy>
+	</target>
+
+
 	<target name="compile.dist">
+		<!-- Disabled
+
+		I have yet to figure out why the physical steps
+		required in the HDIUTIL execution work fine on 
+		the command prompt in Terminal, yet Java, ANT,
+		Python, or something else in between is futzing
+		permissions and forcing the sparse image to only
+		mount read-only
 		<antcall target="package.dist" />
+		-->
+		<antcall target="filecopy.dist" />
 	</target>
 
 </project>
