@@ -1794,9 +1794,12 @@ def main():
 				#cLogger.debug("Adding Branch Name to Path...")
 				#zePublishPath += os.sep + b.getBranch()
 
-
-				cLogger.debug("Adding SyncLabel to Path...")
-				zePublishPath += os.sep + b.getSyncLabel()
+				if ( None != b.getSyncLabel() ):
+					cLogger.debug("Adding SyncLabel to Path...")
+					zePublishPath += os.sep + b.getSyncLabel()
+				else:
+					cLogger.debug("Adding Tag to Path...")
+					zePublishPath += os.sep + b.getTag()
 
 				#try:
 				#	cLogger.debug("Creating Publish Directory...")
