@@ -211,18 +211,16 @@ those in appropriately for the -size nnnM listed in the two below commands...
 Create our DEBUG landing area
 
 	>cp ${project.root}/path/to/template.dmg.sparseimage ${object.root}/appname.debug.dmg.sparseimage
-	>hdiutil resize -size nnnM ${object.root}/appname.debug.dmg.sparseimage
 
 Create our DIST landing area
 
 	>cp ${project.root}/path/to/template.dmg.sparseimage ${object.root}/appname.dmg.sparseimage
-	>hdiutil resize -size nnnM ${object.root}/appname.dmg.sparseimage
 
 
 #### Mount the DEBUG DMG and Populate
 
 	>mkdir ${object.root}/DEBUGDMG
-	>hdiutil attach ${output.root}/appname.debug.dmg.sparseimage -mountpoint ${object.root}/DEBUGDMG
+	>hdiutil attach ${output.root}/appname.debug.dmg.sparseimage -mountpoint ${object.root}/DEBUGDMG -readwrite
 	>cp -Rv ${output.root}/DEBUG/FOO.app ${object.root}/DEBUGDMG/FOO.app
 	>cp ${output.root}/DEBUG/readme.txt ${object.root}/DEBUGDMG/README.txt
 	>cp ${project.root}/docs/LICENSE ${object.root}/DEBUGDMG/LICENSE.txt
@@ -237,7 +235,7 @@ Create our DIST landing area
 #### Mount the DIST DMG and Populate
 
 	>mkdir ${object.root}/DISTDMG
-	>hdiutil attach ${object.root}/appname.dmg.sparseimage -mountpoint ${object.root}/DISTDMG
+	>hdiutil attach ${object.root}/appname.dmg.sparseimage -mountpoint ${object.root}/DISTDMG -readwrite
 	>cp -Rv ${output.root}/DIST/FOO.app ${object.root}/DISTDMG/FOO.app
 	>cp ${output.root}/DIST/readme.txt ${object.root}/DISTDMG/README.txt
 	>cp ${project.root}/docs/LICENSE ${object.root}/DISTDMG/LICENSE.txt
