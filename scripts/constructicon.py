@@ -92,6 +92,7 @@ import optparse
 import os
 import platform
 import sys
+import shutil
 import uuid
 import re
 from git import *
@@ -1750,20 +1751,68 @@ def main():
 		# Publish for official builds
 		# ----------------------------------------------------------------------
 
-		if not (b.getBuildFailed()):
+		# Test to see if we publish
+		if ( None != b.getPublishPath() ):
+			### To-Do:
+			# - Support FTP://USERNAME:USERAUTH@HOSTNAME/Path/to/Publish
+			# - Support SCP://USERNAME@Hostname/Path/to/Publish
+			# - Support SMB://SMBHost/Path/to/Publish
+			# - Support HTTP://USERNAME:USERAUTH@HOSTNAME/Path/to/Publish
+			#
+			# This turns into ##PUBLISH PATH## down below
 
 			cLogger.debug("START -- Publishing Deliverables...")
 
 			### Publish
 
 			# If BuildType is Official and PublishPath is Specified....
+				# Do we really care if it's only official?
 
 			# 	Verify Specified Publish Path
-
 			# 	Create New location
 				##PUBLISH PATH##/{FAILED|SUCCESSFUL}BUILDS/##BUILDTYPE##/##REPOPATH|FILEPATH##/##BRANCH##/##SYNCLABEL##
+			try:
+				cLogger.debug("Constructing Path...")
+				zePublishPath = b.getPublishPath()
 
-			#       Copy Deliverables from Workspace to Publish path
+				if (b.getBuildFailed()):
+					cLogger.debug("Setting to FAILEDBUILDS...")
+					zePublishPath += os.sep + "FAILEDBUILDS"
+				else:
+					cLogger.debug("Setting to SUCCESSFULBUILDS...")
+					zePublishPath += os.sep + "SUCCESSFULBUILDS"
+
+
+				cLogger.debug("Adding BuildType to Path...")
+				zePublishPath += os.sep + b.getBuildType()
+
+				cLogger.debug("Adding RepoPath to Path...")
+				zePublishPath += os.sep + b.getRepoPath()
+				cLogger.debug("Adding Branch Name to Path...")
+				zePublishPath += os.sep + b.getBranch()
+				cLogger.debug("Adding SyncLabel to Path...")
+				zePublishPath += os.sep + b.getSyncLabel()
+
+				#try:
+				#	cLogger.debug("Creating Publish Directory...")
+				#	os.makedirs(zePublishPath)
+				#except:
+				#	cLogger.critical("Failed to create Publish Directory!")
+				#	raise
+
+				try:
+					cLogger.debug("Copying Output Tree...")
+					shutil.copytree( BSR.getOutputPath(), zePublishPath, symlinks=True)
+					cLogger.debug("Copying Output Tree Complete")
+					print("Build Published to: " + zePublishPath)
+				except:
+					cLogger.critical("Failed to Publish!")
+					b.setBuildFailed()
+					raise
+
+				#       Copy Deliverables from Workspace to Publish path
+			except:
+				b.setBuildFailed()
 
 			cLogger.debug("END -- Publishing Deliverables...")
 
