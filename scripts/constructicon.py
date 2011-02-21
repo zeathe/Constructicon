@@ -351,6 +351,7 @@ class messageHandler:
 
 	# Default Emitter, and other emitters
 	def emit(self, record):
+		print(record)
 		self.msgLogger.info(record)
 
 	def debug(self, record):
@@ -369,18 +370,18 @@ class messageHandler:
 		self.msgLogger.critical(record)
 
 	def testMe(self):
-		print "******************************************************************************"
-		print " Process: " + str(self) 
-		print " testMe() output"
-		print "------------------------------------------------------------------------------"
-		print "loggerSource                     : " + self.sourceApp
-		print "msgFormat                        : " + self.msgFormat
-		self.msgLogger.debug("Test - debug messgage")
+		self.msgLogger.emit( "******************************************************************************" )
+		self.msgLogger.emit( " Process: " + str(self) )
+		self.msgLogger.emit( " testMe() output" )
+		self.msgLogger.emit( "------------------------------------------------------------------------------" )
+		self.msgLogger.emit( "loggerSource                     : " + self.sourceApp )
+		self.msgLogger.emit( "msgFormat                        : " + self.msgFormat )
+		self.msgLogger.debug("Test - debug messgage") 
 		self.msgLogger.info("Test - info message")
 		self.msgLogger.warning("Test - warning message")
 		self.msgLogger.error("Test - error message")
 		self.msgLogger.critical("Test - critical message")
-		print "******************************************************************************"
+		self.msgLogger.emit( "******************************************************************************" )
 
 class detectOS:
 	def __init__(self, verbosityLevel):
@@ -417,7 +418,7 @@ class detectOS:
 			self.msgLogger.debug("Executing runDetection()")
 			self.runDetection()
 		except:
-			self.msgLogger.error("Failed to execut runDetection()")
+			self.msgLogger.error("Failed to execute runDetection()")
 			raise
 
 	def runDetection(self):
@@ -442,27 +443,27 @@ class detectOS:
 		return str.lower(self.detectedOS)
 
 	def testMe(self):
-		print "******************************************************************************"
-		print " Process: " + str(self) 
-		print " testMe() output"
-		print "------------------------------------------------------------------------------"
-		print " detectedOS                 : " + self.detectedOS
-		print " Derived from os.uname..."
-		print "    sysname                 : " + self.sysname
-		print "    nodename                : " + self.nodename
-		print "    release                 : " + self.release
-		print "    version                 : " + self.version
-		print "    machine                 : " + self.machine
-		print " Other Values..."
-		print "    os.name                 : " + self.name
-		print "    sys.platform            : " + self.platform
-		print "    platform.system()       : " + self.system
+		self.msgLogger.emit( "******************************************************************************" )
+		self.msgLogger.emit( " Process: " + str(self) )
+		self.msgLogger.emit( " testMe() output" )
+		self.msgLogger.emit( "------------------------------------------------------------------------------" )
+		self.msgLogger.emit( " detectedOS                 : " + self.detectedOS )
+		self.msgLogger.emit( " Derived from os.uname..." )
+		self.msgLogger.emit( "    sysname                 : " + self.sysname )
+		self.msgLogger.emit( "    nodename                : " + self.nodename )
+		self.msgLogger.emit( "    release                 : " + self.release )
+		self.msgLogger.emit( "    version                 : " + self.version )
+		self.msgLogger.emit( "    machine                 : " + self.machine )
+		self.msgLogger.emit( " Other Values..." )
+		self.msgLogger.emit( "    os.name                 : " + self.name )
+		self.msgLogger.emit( "    sys.platform            : " + self.platform )
+		self.msgLogger.emit( "    platform.system()       : " + self.system )
 		self.msgLogger.debug("Test - debug messgage")
 		self.msgLogger.info("Test - info message")
 		self.msgLogger.warning("Test - warning message")
 		self.msgLogger.error("Test - error message")
 		self.msgLogger.critical("Test - critical message")
-		print "******************************************************************************"
+		self.msgLogger.emit( "******************************************************************************" )
 
 
 class builderObject:
@@ -595,31 +596,31 @@ class builderObject:
 
 
 	def testMe(self):
-		print "******************************************************************************"
-		print " Process: " + str(self) 
-		print " testMe() output"
-		print "------------------------------------------------------------------------------"
-		print " Build Generics..."
-		print "    BuildType                    : " + str(self.buildtype)
-		print "    RepoPath                     : " + str(self.repopath)
-		print "    FilePath                     : " + str(self.filepath)
-		print "    SyncLabel                    : " + str(self.synclabel)
-		print "    Branch                       : " + str(self.branch)
-		print "    Workspace                    : " + str(self.workspace)
-		print "    PublishPath                  : " + str(self.publishpath)
-		print " Build Versioning Info..."
-		print "    Major Version                : " + str(self.majorversion)
-		print "    Minor Version                : " + str(self.minorversion)
-		print "    Maintenance Version          : " + str(self.maintenanceversion)
-		print "    Build ID                     : " + str(self.buildid)
-		print "Internal BuildTrack variables..."
-		print "    Build Failure                : " + str(self.buildfailure)
+		self.msgLogger.emit( "******************************************************************************" )
+		self.msgLogger.emit( " Process: " + str(self) )
+		self.msgLogger.emit( " testMe() output" )
+		self.msgLogger.emit( "------------------------------------------------------------------------------" )
+		self.msgLogger.emit( " Build Generics..." )
+		self.msgLogger.emit( "    BuildType                    : " + str(self.buildtype) )
+		self.msgLogger.emit( "    RepoPath                     : " + str(self.repopath) )
+		self.msgLogger.emit( "    FilePath                     : " + str(self.filepath) )
+		self.msgLogger.emit( "    SyncLabel                    : " + str(self.synclabel) )
+		self.msgLogger.emit( "    Branch                       : " + str(self.branch) )
+		self.msgLogger.emit( "    Workspace                    : " + str(self.workspace) )
+		self.msgLogger.emit( "    PublishPath                  : " + str(self.publishpath) )
+		self.msgLogger.emit( " Build Versioning Info..." )
+		self.msgLogger.emit( "    Major Version                : " + str(self.majorversion) )
+		self.msgLogger.emit( "    Minor Version                : " + str(self.minorversion) )
+		self.msgLogger.emit( "    Maintenance Version          : " + str(self.maintenanceversion) )
+		self.msgLogger.emit( "    Build ID                     : " + str(self.buildid) )
+		self.msgLogger.emit( "Internal BuildTrack variables..." )
+		self.msgLogger.emit( "    Build Failure                : " + str(self.buildfailure) )
 		self.msgLogger.debug("Test - debug messgage")
 		self.msgLogger.info("Test - info message")
 		self.msgLogger.warning("Test - warning message")
 		self.msgLogger.error("Test - error message")
 		self.msgLogger.critical("Test - critical message")
-		print "******************************************************************************"
+		self.msgLogger.emit( "******************************************************************************" )
 
 
 
@@ -711,28 +712,28 @@ class localBSR:
 		pass
 
 	def testMe(self):
-		print "******************************************************************************"
-		print " Process: " + str(self) 
-		print " testMe() output"
-		print "------------------------------------------------------------------------------"
-		print "    Workspace		: " + str(self.workspace)
+		self.msgLogger.emit( "******************************************************************************" )
+		self.msgLogger.emit( " Process: " + str(self) )
+		self.msgLogger.emit( " testMe() output" )
+		self.msgLogger.emit( "------------------------------------------------------------------------------" )
+		self.msgLogger.emit( "    Workspace		: " + str(self.workspace) )
 		try:
-			print "    os.environ[temp]    : " + str(os.environ['TEMP'])
+			self.msgLogger.emit( "    os.environ[temp]    : " + str(os.environ['TEMP']) )
 		except:
 			pass
 		try:
-			print "    os.environ[tmpdir]  : " + str(os.environ['TMPDIR'])
+			self.msgLogger.emit( "    os.environ[tmpdir]  : " + str(os.environ['TMPDIR']) )
 		except:
 			pass
 		try:
-			print "    os.environ[tmp]     : " + str(os.environ['TMP'])
+			self.msgLogger.emit( "    os.environ[tmp]     : " + str(os.environ['TMP']) )
 		except:
 			pass
-		print "    os.environ[temp]    : " 
-		print "    buildSystemPath     : " + str(self.buildSystemPath)
-		print "    projectPath         : " + str(self.projectPath)
-		print "    outputPath          : " + str(self.outputPath)
-		print "******************************************************************************"
+		self.msgLogger.emit( "    os.environ[temp]    : " )
+		self.msgLogger.emit( "    buildSystemPath     : " + str(self.buildSystemPath) )
+		self.msgLogger.emit( "    projectPath         : " + str(self.projectPath) )
+		self.msgLogger.emit( "    outputPath          : " + str(self.outputPath) )
+		self.msgLogger.emit( "******************************************************************************" )
 
 class gitObject:
 	def __init__(self, verbosityLevel):
@@ -874,15 +875,15 @@ class gitObject:
 		return self.tags
 
 	def testMe(self):
-		print "******************************************************************************"
-		print " Process: " + str(self) 
-		print " testMe() output"
-		print "------------------------------------------------------------------------------"
-		print "    Remote Repo Path    : " + str(self.remoteRepoPath)
-		print "    Local Repo Path     : " + str(self.localRepoPath)
-		print "    Repo Branch         : " + str(self.repoBranch)
-		print "    Sync Label          : " + str(self.repoSyncLabel)
-		print "******************************************************************************"
+		self.msgLogger.emit( "******************************************************************************" )
+		self.msgLogger.emit( " Process: " + str(self) )
+		self.msgLogger.emit( " testMe() output" )
+		self.msgLogger.emit( "------------------------------------------------------------------------------" )
+		self.msgLogger.emit( "    Remote Repo Path    : " + str(self.remoteRepoPath) )
+		self.msgLogger.emit( "    Local Repo Path     : " + str(self.localRepoPath) )
+		self.msgLogger.emit( "    Repo Branch         : " + str(self.repoBranch) )
+		self.msgLogger.emit( "    Sync Label          : " + str(self.repoSyncLabel) )
+		self.msgLogger.emit( "******************************************************************************" )
 
 
 
@@ -942,13 +943,17 @@ def main():
 	cLogger.debug("""cmdOptsDict.get("workspace") is   : """ + str(cmdOptsDict.get("workspace")))
 	cLogger.debug("""cmdOptsDict.get("publishpath") is : """ + str(cmdOptsDict.get("publishpath")))
 
+	# ----------------------------------------------------------------------
+	# Identify the OS level being used
+	# ----------------------------------------------------------------------
 
 
-	#cLogger.debug("START -- detectOS()")
-	#testedOS = detectOS(cmdOpts.getVerbosity())
-	#if ( cmdOpts.getSpewie() ):
-	#	testedOS.testMe()
-	#cLogger.debug("END -- detectOS()")
+	cLogger.debug("START -- detectOS()")
+	testedOS = detectOS(cmdOpts.getVerbosity())
+	if ( cmdOpts.getSpewie() ):
+		testedOS.testMe()
+
+	cLogger.debug("END -- detectOS()")
 
 
 	# ----------------------------------------------------------------------
@@ -957,7 +962,7 @@ def main():
 
 	if not ( cmdOpts.getSkipSelfSync() ):
 
-		print "INITIATING SELF-SYNC..."
+		cLogger.emit( "INITIATING SELF-SYNC..." )
 
 		cLogger.debug("START -- Syncing Build System...")
 
@@ -1047,7 +1052,7 @@ def main():
 		#cLogger.critical("CommandLine Would Be: blah blah constructicon.py " + recycleCMDLine + " --skipselfsync")
 		# selfsyncBSR.getBuildSystemPath()
 		# cLogger.debug("Calling CommandLine: " str(selfsyncBSR.getBuildSystemPath()) + os.sep + "python" + os.sep + "python.mac.sh" + " " + str(selfsyncBSR.getBuildSystemPath()) + os.sep + "scripts" + os.sep + "constructicon.py " + str(sys.argv) + " --skipselfsync")
-		print "SELF SYNC SUCCESSFUL.  RELAUNCHING..."
+		cLogger.emit( "SELF SYNC SUCCESSFUL.  RELAUNCHING..." )
 		RetVal = os.system(selfsyncBSR.getBuildSystemPath() + os.sep + "python" + os.sep + "python.mac.sh" + " " + selfsyncBSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "constructicon.py " + recycleCMDLine + " --skipselfsync")
 		exit(RetVal)
 		#exit(69)
@@ -1646,34 +1651,34 @@ def main():
 			### Dump Debug Info
 
 			# Dump Debug Info
-			print "*** BUILD INFORMATION ********************************************************"
-			print ""
-			print "Local Build FS Info..."
-			print "------------------------------------------------------------------------------"
-			print "    Workspace           : " + str(BSR.getWorkspace())
-			print "    buildSystemPath     : " + str(BSR.getBuildSystemPath())
-			print "    projectPath         : " + str(BSR.getProjectPath())
-			print "    outputPath          : " + str(BSR.getOutputPath())
-			print ""
-			print " Build Generics..."
-			print "------------------------------------------------------------------------------"
-			print "    BuildType           : " + str(b.getBuildType())
-			print "    RepoPath            : " + str(b.getRepoPath())
-			print "    FilePath            : " + str(b.getFilePath())
-			print "    SyncLabel           : " + str(b.getSyncLabel())
-			print "    Git Tag             : " + str(b.getTag())
-			print "    Branch              : " + str(b.getBranch())
-			print "    Workspace           : " + str(b.getWorkspace())
-			print "    PublishPath         : " + str(b.getPublishPath())
-			print ""
-			print " Build Versioning Info..."
-			print "------------------------------------------------------------------------------"
-			print "    Major Version       : " + str(b.getMajorVersion())
-			print "    Minor Version       : " + str(b.getMinorVersion())
-			print "    Maintenance Version : " + str(b.getMaintVersion())
-			print "    Build ID            : " + str(b.getBuildID())
-			print ""
-			print "******************************************************************************"
+			cLogger.emit( "*** BUILD INFORMATION ********************************************************" )
+			cLogger.emit( "" )
+			cLogger.emit( "Local Build FS Info..." )
+			cLogger.emit( "------------------------------------------------------------------------------" )
+			cLogger.emit( "    Workspace           : " + str(BSR.getWorkspace()) )
+			cLogger.emit( "    buildSystemPath     : " + str(BSR.getBuildSystemPath()) )
+			cLogger.emit( "    projectPath         : " + str(BSR.getProjectPath()) )
+			cLogger.emit( "    outputPath          : " + str(BSR.getOutputPath()) )
+			cLogger.emit( "" )
+			cLogger.emit( " Build Generics..." )
+			cLogger.emit( "------------------------------------------------------------------------------" )
+			cLogger.emit( "    BuildType           : " + str(b.getBuildType()) )
+			cLogger.emit( "    RepoPath            : " + str(b.getRepoPath()) )
+			cLogger.emit( "    FilePath            : " + str(b.getFilePath()) )
+			cLogger.emit( "    SyncLabel           : " + str(b.getSyncLabel()) )
+			cLogger.emit( "    Git Tag             : " + str(b.getTag()) )
+			cLogger.emit( "    Branch              : " + str(b.getBranch()) )
+			cLogger.emit( "    Workspace           : " + str(b.getWorkspace()) )
+			cLogger.emit( "    PublishPath         : " + str(b.getPublishPath()) )
+			cLogger.emit( "" )
+			cLogger.emit( " Build Versioning Info..." )
+			cLogger.emit( "------------------------------------------------------------------------------" )
+			cLogger.emit( "    Major Version       : " + str(b.getMajorVersion()) )
+			cLogger.emit( "    Minor Version       : " + str(b.getMinorVersion()) )
+			cLogger.emit( "    Maintenance Version : " + str(b.getMaintVersion()) )
+			cLogger.emit( "    Build ID            : " + str(b.getBuildID()) )
+			cLogger.emit( "" )
+			cLogger.emit( "******************************************************************************" )
 
 			cLogger.debug("Setting Environment Variables...")
 
@@ -1730,7 +1735,7 @@ def main():
 			# $ popd
 			try:
 				cLogger.debug("Calling Ant...")
-				print "Calling: " + str(BSR.getBuildSystemPath()) + "ant" + os.sep + "bin" + os.sep + "ant" + " -logger org.apache.tools.ant.listener.BigProjectLogger " + " -logfile " + BSR.getOutputPath() + os.sep + "constructicon.ant.log.txt " + "-f" + " " + BSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "build.xml"
+				cLogger.emit( "Calling: " + str(BSR.getBuildSystemPath()) + "ant" + os.sep + "bin" + os.sep + "ant" + " -logger org.apache.tools.ant.listener.BigProjectLogger " + " -logfile " + BSR.getOutputPath() + os.sep + "constructicon.ant.log.txt " + "-f" + " " + BSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "build.xml" )
 				BuildRetVal = os.system(BSR.getBuildSystemPath() + "ant" + os.sep + "bin" + os.sep + "ant" + " -logger org.apache.tools.ant.listener.BigProjectLogger " + " -logfile " + BSR.getOutputPath() + os.sep + "constructicon.ant.log.txt " + "-f" + " " + BSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "build.xml")
 			except:
 				cLogger.error("Failed to launch ANT build")
@@ -1812,7 +1817,7 @@ def main():
 					cLogger.debug("Copying Output Tree...")
 					shutil.copytree( BSR.getOutputPath(), zePublishPath, symlinks=True)
 					cLogger.debug("Copying Output Tree Complete")
-					print("Build Published to: " + zePublishPath)
+					cLogger.emit("Build Published to: " + zePublishPath)
 				except:
 					cLogger.critical("Failed to Publish!")
 					b.setBuildFailed()
@@ -1859,12 +1864,12 @@ def main():
 
 		if not ( b.getBuildFailed() ):
 			cLogger.debug("Build Completed Successfully...")
-			print "BUILD SUCCEEDED"
+			cLogger.emit( "BUILD SUCCEEDED" )
 			exit(0)
 		else:
 			cLogger.error("Build Reported Failure...")
 			cLogger.critical("BUILD FAILED")
-			print "BUILD FAILED"
+			cLogger.emit( "BUILD FAILED" )
 			exit(1)
 
 

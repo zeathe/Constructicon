@@ -131,13 +131,15 @@
 	<!-- platform.windows shiznit -->
 
 	<target name="build.debug.windows" if="platform.windows" depends="init">
-		<echo message="!   build.debug.windows NOT IMPLEMENTED" />
-		<!-- <property name="BuildRan" value="true" /> -->
+	       <ant antfile="${proj.root}/BUILD/build.xml" target="compile.debug" output="${logging.root}/build.debug.mac.constructicon.log.txt" />
+
+	       <property name="BuildRan" value="true" />
 	</target>
 
 	<target name="build.dist.windows" if="platform.windows" depends="init">
-		<echo message="!   build.dist.windows NOT IMPLEMENTED" />
-		<!-- <property name="BuildRan" value="true" /> -->
+		<ant antfile="${proj.root}/BUILD/build.xml" target="compile.dist" output="${logging.root}/build.dist.mac.constructicon.log.txt" />
+
+		<property name="BuildRan" value="true" />
 	</target>
 
 
