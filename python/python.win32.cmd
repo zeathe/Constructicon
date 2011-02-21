@@ -4,6 +4,8 @@ pushd %~dp0
 
 pushd ..\WINx86\java\jre6\bin
 SET PATH=%cd%;%PATH%
+cd ..
+SET JAVA_HOME=%cd%
 popd
 
 pushd ..\WINx86\Python27
