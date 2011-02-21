@@ -396,14 +396,21 @@ class detectOS:
 			self.detectedOS = None
 
 			self.msgLogger.debug("Generating a uName Object")
-			self.uname = os.uname()
+			try:
+				self.uname = os.uname()
 		
-			self.msgLogger.debug("Pull out of the uName tuple (sysname, nodename, release, version, machine)")
-			self.sysname = self.uname[0]
-			self.nodename = self.uname[1]
-			self.release = self.uname[2]
-			self.version = self.uname[3]
-			self.machine = self.uname[4]
+				self.msgLogger.debug("Pull out of the uName tuple (sysname, nodename, release, version, machine)")
+				self.sysname = self.uname[0]
+				self.nodename = self.uname[1]
+				self.release = self.uname[2]
+				self.version = self.uname[3]
+				self.machine = self.uname[4]
+			except:
+				self.sysname = ""
+				self.nodename = ""
+				self.release = ""
+				self.version = ""
+				self.machine = ""
 			
 			self.msgLogger.debug("Pull other Python variables for OS detection...")
 			self.name = os.name
@@ -1792,7 +1799,8 @@ def main():
 				zePublishPath += os.sep + b.getBuildType()
 
 				cLogger.debug("Adding RepoPath to Path...")
-				zePublishPath += os.sep + b.getRepoPath()
+				# Ugliest string alive.... Remove :, /, \, @ from path
+				zePublishPath += os.sep + str.replace(str.replace(str.replace(str.replace(b.getRepoPath(), ":", "_"), "/", "."), "\\", "."), "@", "-AT-")
 
 				# Branch makes the directory structure a little redundant
 				
