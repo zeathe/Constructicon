@@ -244,7 +244,7 @@ official - builds an official build updating tags and versions with the defined 
 
 		#if ( str.lower("repopath") == self.cmdOpts.helper ):
 		#	print("--repopath    The path of the repo man")
-		#	exit(255)
+		#	sys.exit(255)
 
 	def getSpewie(self):
 		return self.cmdOpts.spewie
@@ -915,13 +915,13 @@ def main():
 			print("")
 			print("ERROR: Failed to bootstrap the CommandLine parsing process")
 			print("")
-			exit(255)
+			sys.exit(255)
 
 
 	try:
 		cmdOpts.sanityCheck()
 	except:
-		exit(1)
+		sys.exit(1)
 
 
 	# ----------------------------------------------------------------------
@@ -981,7 +981,7 @@ def main():
 			selfsyncB = builderObject(cmdOpts.getVerbosity())
 		except:
 			cLogger.critical("Failed to create a Self-Sync BuildObject")
-			exit(1)
+			sys.exit(1)
 
 		cLogger.debug("Pushing Command-Line specified Workspace into selfsyncB")
 		selfsyncB.setWorkspace(cmdOptsDict.get("workspace"))
@@ -993,21 +993,21 @@ def main():
 			selfsyncBSR.resetBuildSystemPath()
 		except:
 			cLogger.critical("Failed to Create Self-Sync BSRObject")
-			exit(1)
+			sys.exit(1)
 
 		try:
 			cLogger.debug("Creating Self-Sync GIT Object")
 			selfsyncGIT = gitObject(cmdOptsDict.get("verbosity"))
 		except:
 			cLogger.critical("Failed to Create Self-Sync GIT Object")
-			exit(1)
+			sys.exit(1)
 
 		try:
 			cLogger.debug("Creating Build System Path")
 			os.makedirs(selfsyncBSR.getBuildSystemPath())	
 		except:
 			cLogger.critical("Failed to Create Build System Path " + str(selfsyncBSR.getBuildSystemPath()))
-			exit(1)
+			sys.exit(1)
 
 		cLogger.debug("Setting RemoteRepoPath")
 		selfsyncGIT.setRemoteRepoPath("git://github.com/zeathe/Constructicon.git")
@@ -1020,25 +1020,25 @@ def main():
 			cLogger.debug("selfsyncGIT Init Local Repo")
 			selfsyncGIT.initRepo()
 		except:
-			exit(1)
+			sys.exit(1)
 
 		try:
 			cLogger.debug("selfsyncGIT Init Remote Repo")
 			selfsyncGIT.initRemoteRepo()
 		except:
-			exit(1)
+			sys.exit(1)
 
 		try:
 			cLogger.debug("selfsyncGIT Remote Fetch")
 			selfsyncGIT.remoteFetch()
 		except:
-			exit(1)
+			sys.exit(1)
 
 		try:
 			cLogger.debug("selfsyncGIT checkout master")
 			selfsyncGIT.checkoutTag("v1.0-LATEST")
 		except:
-			exit(1)
+			sys.exit(1)
 
 
 
@@ -1061,8 +1061,8 @@ def main():
 		# cLogger.debug("Calling CommandLine: " str(selfsyncBSR.getBuildSystemPath()) + os.sep + "python" + os.sep + "python.mac.sh" + " " + str(selfsyncBSR.getBuildSystemPath()) + os.sep + "scripts" + os.sep + "constructicon.py " + str(sys.argv) + " --skipselfsync")
 		cLogger.emit( "SELF SYNC SUCCESSFUL.  RELAUNCHING..." )
 		RetVal = os.system(selfsyncBSR.getBuildSystemPath() + os.sep + "python" + os.sep + "python.mac.sh" + " " + selfsyncBSR.getBuildSystemPath() + os.sep + "scripts" + os.sep + "constructicon.py " + recycleCMDLine + " --skipselfsync")
-		exit(RetVal)
-		#exit(69)
+		sys.exit(RetVal)
+		#sys.exit(69)
 
 
 		# Re-Execute Constructicon (call --skipselfsync)
@@ -1082,7 +1082,7 @@ def main():
 			b = builderObject(cmdOpts.getVerbosity())
 		except:
 			cLogger.critical("Cannot create builderObject b")
-			exit(1)
+			sys.exit(1)
 
 
 		cLogger.debug("Pushing Command-Line specified BuildType into BuildObject b")
@@ -1090,7 +1090,7 @@ def main():
 			b.setBuildType(cmdOptsDict.get("buildtype")) # This is a required variable from the command-line
 		except:
 			cLogger.critical("Failed to assign BuildType to BuildObject b")
-			exit(1)
+			sys.exit(1)
 		
 
 		if not ( None == cmdOptsDict.get("repopath") ):
@@ -1099,7 +1099,7 @@ def main():
 				b.setRepoPath(cmdOptsDict.get("repopath")) # This is a required variable from the command-line
 			except:
 				cLogger.critical("Failed to assign RepoPath to BuildObject b")
-				exit(1)
+				sys.exit(1)
 
 		if not ( None == cmdOptsDict.get("filepath") ):
 			cLogger.debug("Pushing Command-Line specified FilePath into BuildObject b")
@@ -1107,7 +1107,7 @@ def main():
 				b.setFilePath(cmdOptsDict.get("filepath")) # This is a required variable from the command-line
 			except:
 				cLogger.critical("Failed to assign FilePath to BuildObject b")
-				exit(1)
+				sys.exit(1)
 
 		cLogger.debug("Checking if SyncLabel has been specified on Command-Line")
 		if ( None != cmdOptsDict.get("synclabel") ):
@@ -1154,7 +1154,7 @@ def main():
 				BSR = localBSR(cmdOptsDict.get("verbosity"), b)
 			except:
 				cLogger.critical("Failed to create BSR LocalBSR object...")
-				exit(1)
+				sys.exit(1)
 
 			if ( cmdOpts.getSpewie() ):
 				BSR.testMe()
@@ -1178,14 +1178,14 @@ def main():
 					os.link(b.getFilePath(), BSR.getProjectPath())
 				except:
 					cLogger.critical("Failed to Link FilePath " + str(b.getFilePath()) + " to ProjectPath " + str(BSR.getProjectPath()))
-					exit(1)
+					sys.exit(1)
 			else:
 				if ( None != b.getRepoPath() ):
 					cLogger.debug("Creating BSR Project Path      : " + str(BSR.getProjectPath()))
 					os.makedirs(BSR.getProjectPath())
 				else:
 					cLogger.critical("Major Problem.... No FilePath or RepoPath. We fell into a trap we should never hit...")
-					exit(1)
+					sys.exit(1)
 
 
 			cLogger.debug("END -- BSR built up...")
@@ -1485,7 +1485,7 @@ def main():
 							cLogger.error("...you must specify --forcenewlabel to make this happen")
 
 							# It is okay to blow out here as official builds won't leave behind a link in the Project node
-							exit(1)
+							sys.exit(1)
 						else:
 							cLogger.warning("You are generating a new official build in the same state as a previous label: " + str(b.getSyncLabel()))
 
@@ -1873,12 +1873,12 @@ def main():
 		if not ( b.getBuildFailed() ):
 			cLogger.debug("Build Completed Successfully...")
 			cLogger.emit( "BUILD SUCCEEDED" )
-			exit(0)
+			sys.exit(0)
 		else:
 			cLogger.error("Build Reported Failure...")
 			cLogger.critical("BUILD FAILED")
 			cLogger.emit( "BUILD FAILED" )
-			exit(1)
+			sys.exit(1)
 
 
 if __name__ == "__main__":
